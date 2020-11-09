@@ -33,15 +33,22 @@ import imghdr
 import zipfile
 import exifread
 import tkinter as tk
+from datetime import datetime
 
 try:
-    from tkinter import filedialog
+  from tkinter import filedialog
 except ImportError:
-    import tkFileDialog
+  import tkFileDialog
 from geojson import Point, Feature, FeatureCollection, dump
 import json
 
 
+hasPil = False
+try:
+  from PIL import Image
+  hasPil = True
+except:
+  hasPil = False
 
 
 def splitall(path):
@@ -179,7 +186,7 @@ def CreateKmlDoc(title):
   istyle.appendChild(scale)
   icon = kml_doc.createElement('Icon')
   href = kml_doc.createElement('href')
-  href.appendChild(kml_doc.createTextNode('http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png'))
+  href.appendChild(kml_doc.createTextNode('http://maps.google.com/mapfiles/kml/pal4/icon49.png'))
   icon.appendChild(href)
   istyle.appendChild(icon)
 
@@ -263,16 +270,36 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
 
 
+
   tags = exifread.process_file(the_file,details=False)
 #   for tag in tags.keys():
 #     if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
 #         print "Key: %s, value %s" % (tag, tags[tag])
 
 
+
+  im = Image.open(file_name)
+  width, height = im.size
+  newWidth = 640
+  newHeight = height/(width/newWidth)
+  newsize = (int(newWidth), int(newHeight))
+  im1 = im.resize(newsize)
+  parts = file_name.split('.')
+  smallFileName = parts[0]+'_small.'+parts[1]
+  im1 = im1.save(smallFileName)
+
+  file_name = smallFileName
+
+
+
+
   try:
       timestamp = tags.get('EXIF DateTimeOriginal').__str__()
+      date_obj = datetime.strptime(timestamp, '%Y:%m:%d %H:%M:%S')
+
   except:
       timestamp = 'No timestamp'
+
   coords = GetGps(tags)
 
   GeoPoint = Point((coords[1],coords[0]))
@@ -312,6 +339,13 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
   vis = kml_doc.createElement('visibility')
   vis.appendChild(kml_doc.createTextNode(kmlvis))
+
+  if timestamp != 'No timestamp':
+    timespan = kml_doc.createElement('TimeStamp')
+    taken = kml_doc.createElement('when')
+    taken.appendChild(kml_doc.createTextNode(date_obj.isoformat()))
+    timespan.appendChild(taken)
+    po.appendChild(timespan)
 
   description = kml_doc.createElement('description')
   base = os.path.splitext(file_name)[0]
