@@ -20,12 +20,11 @@ http://sourceforge.net/projects/exif-py/
   CreateKmlFile(): Creates and writes out a KML document to file.
 """
 
-__author__ = 'mmarks@google.com (Mano Marks)'
 
 
 import sys
 import xml.dom.minidom
-#import xml.etree.ElementTree as ET
+
 import time
 import glob
 import os.path
@@ -212,18 +211,22 @@ def CreateKmlDoc(title):
   folderid.appendChild(kml_doc.createTextNode('photos'))
   folder.appendChild(folderid)
   document.appendChild(folder)
-#   folder = kml_doc.createElement('Folder')
-#   fname =kml_doc.createElement('name')
-#   fname.appendChild(kml_doc.createTextNode('Photos Without GPS Tag'))
-#   folder.appendChild(fname)
-#   folderid = kml_doc.createElement('id')
-#   folderid.appendChild(kml_doc.createTextNode('noGPSphotos'))
-#   folder.appendChild(folderid)
-#   document.appendChild(folder)
+
 
   return kml_doc
 
 def scrubKML(kml_doc):
+  """
+  This function looks through the KML file and finds photos without coordinates. It then
+  assigns the average coordinates of the project so that if a user selects the photo
+  from the menu on the left it will pop up in an average location and not at lat = 0
+  lon = 0.
+
+  Args:
+    kml_doc: An XML document object.
+
+  """
+
   avgLat = 0
   avgLon = 0
   avgElev = 0
@@ -267,6 +270,8 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
   folderId = '-'.join(splitall(file_name)[:-1])
 
+  path,filename = os.path.split(file_name)
+
 
 
 
@@ -276,19 +281,20 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 #     if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
 #         print "Key: %s, value %s" % (tag, tags[tag])
 
-
-
+  if not os.path.exists('kml'):
+    os.mkdir('kml')
   im = Image.open(file_name)
   width, height = im.size
   newWidth = 640
   newHeight = height/(width/newWidth)
   newsize = (int(newWidth), int(newHeight))
   im1 = im.resize(newsize)
-  parts = file_name.split('.')
-  smallFileName = parts[0]+'_small.'+parts[1]
+  parts = filename.split('.')
+  longname =  path.replace("/",'-')
+  smallFileName = 'kml/'+longname+'-'+parts[0]+'_small.'+parts[1]
   im1 = im1.save(smallFileName)
 
-  file_name = smallFileName
+
 
 
 
@@ -304,23 +310,19 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
   GeoPoint = Point((coords[1],coords[0]))
   orientation = tags.get('Image Orientation').__str__()
-  if orientation:
-    print (orientation)
-  else:
-    print("No Orientation")
+
   style = ""
 
+  #Handle rotation in the Google earth popup
   if "180" in orientation:
-      print('new style')
       style = "style='-webkit-transform: rotate(-180deg);'"
   if "Rotated 90 CCW"  in orientation:
-      print('new style 90 ccw')
       style = "style='-webkit-transform: rotate(90deg);'"
 
   kmlstyle = '#GPSphoto'
   kmlvis = '1'
 
-  path,filename = os.path.split(file_name)
+
 
   placeName = filename
 
@@ -351,7 +353,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
   base = os.path.splitext(file_name)[0]
   ext = os.path.splitext(file_name)[1]
   file_name = base + ext.lower()
-  cdata = "<h3>Date: "+timestamp+"</h3><h3>Latitude: "+str(coords[0])+"</h3><h3>Longitude: "+str(coords[1])+"</h3><img src='"+file_name+"' width=600 "+style+" >"
+  cdata = "<h3>Date: "+timestamp+"</h3><h3>Latitude: "+str(coords[0])+"</h3><h3>Longitude: "+str(coords[1])+"</h3><img src='"+smallFileName+"' width=600 "+style+" >"
 
   description.appendChild(kml_doc.createCDATASection(cdata))
   po.appendChild(name)
@@ -406,7 +408,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
     for part in photoPath:
       create = 1
       for node in folder.getElementsByTagName('Folder'):  # visit every node <bar />
-          print(node.toxml())
+          #print(node.toxml())
           if(node):
             name = node.getElementsByTagName("name")[0]
             if part == name.firstChild.data:
@@ -414,7 +416,6 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
               folder = node
               create = 0
       if(create):
-        print('Creating Folder:'+part)
         nextfolder = kml_doc.createElement('Folder')
         fname =kml_doc.createElement('name')
         folderid = kml_doc.createElement('id')
@@ -425,16 +426,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
         folder.appendChild(nextfolder)
         folder = nextfolder
 
-          #for part in photoPath:
 
-
-
-#   folder = kml_doc.getElementsByTagName('Folder')[0]
-#   for node in kml_doc.getElementsByTagName('Folder'):  # visit every node <bar />
-#     if node.getElementsByTagName("id"):
-#       name = node.getElementsByTagName("id")[0]
-#       if folderId == name.firstChild.data:
-#         folder = node
   folder.appendChild(po)
 
 
@@ -478,33 +470,6 @@ def CreateKmlFile(baseDir,file_names, new_file_name,title):
       continue
     else:
       files[file_name] = the_file
-#       photoPath = splitall(file_name)
-#       level = 0
-#       folder = kml_doc.getElementsByTagName('Folder')[0]
-#
-#       #remove the file name and set up folders in kml
-#       photoPath = photoPath[:-1]
-#       for part in photoPath:
-#         create = 1
-#         for node in folder.getElementsByTagName('Folder'):  # visit every node <bar />
-#             name = node.getElementsByTagName("name")[0]
-#             if part == name.firstChild.data:
-#                 #print('This folder Exists')
-#                 folder = node
-#                 create = 0
-#         if(create):
-#           print('Creating Folder:'+part)
-#           nextfolder = kml_doc.createElement('Folder')
-#           fname =kml_doc.createElement('name')
-#           folderid = kml_doc.createElement('id')
-#           folderid.appendChild(kml_doc.createTextNode('-'.join(photoPath)))
-#           fname.appendChild(kml_doc.createTextNode(part))
-#           nextfolder.appendChild(folderid)
-#           nextfolder.appendChild(fname)
-#           folder.appendChild(nextfolder)
-#           folder = nextfolder
-#
-#       #for part in photoPath:
 
 
 
@@ -567,6 +532,8 @@ def main():
   for subdir, dirs, files in os.walk(baseDir):
     for file in files:
         toss, file_extension = os.path.splitext(os.path.relpath(subdir+'/'+file))
+        if '/kml' in subdir:
+          continue
         if(imghdr.what(os.path.relpath(subdir+'/'+file)) == 'jpeg'):
           filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
         elif (file_extension.upper() == '.JPG'):
@@ -583,19 +550,19 @@ def main():
     print ("No 'jpg' or 'jpeg' files found in directory")
 
   else:
+    title = os.path.split(os.getcwd())[1]
+    geoJsonCollection = CreateKmlFile(baseDir,filelist,kmlFileName,title)
+    kmlSmallImages = os.listdir('kml/')
+
     timestr = time.strftime(baseDir+"/GeoTagged_Photos_Processed %Y_%m_%d.kmz")
     zf = zipfile.ZipFile(timestr, mode='w')
-    for file in filelist:
-      zf.write(file)
-    title = os.path.split(os.getcwd())[1]
+    for file in kmlSmallImages:
+      zf.write('kml/'+file)
 
-    geoJsonCollection = CreateKmlFile(baseDir,filelist,kmlFileName,title)
+
     zf.write(kmlFileName)
     zf.close()
 
-  #remove the temporary doc.kml file
-  #if os.path.exists("doc.kml"):
-  #  os.remove("doc.kml")
 
   #input file
   fin = open(geoPhotoDir+"/LeafletMap_template.html", "rt")
