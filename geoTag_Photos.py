@@ -492,30 +492,12 @@ def CreateKmlFile(baseDir,file_names, new_file_name,title):
 
 
 def main():
-# This function was taken from EXIF.py to directly handle
-# command line arguments.
 
   root = tk.Tk()
   T = tk.Text(root, height=4, width=80)
   T.pack()
   T.insert(tk.END, "Instructions:\n\nSelect the top directory of photos to encode in a KMZ file.\nAll photos below this directory will be included.")
   v = tk.IntVar()
-
-#   tk.Label(root,
-#         text="""Choose a programming language:""",
-#         justify = tk.LEFT,
-#         padx = 20).pack()
-#   tk.Radiobutton(root,
-#               text="Python",
-#               padx = 20,
-#               variable=v,
-#               value=1).pack(anchor=tk.W)
-#   tk.Radiobutton(root,
-#               text="Perl",
-#               padx = 20,
-#               variable=v,
-#               value=2).pack(anchor=tk.W)
-#   root.mainloop()
 
   geoPhotoDir = os.getcwd()
   try:
