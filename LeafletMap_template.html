@@ -13,6 +13,7 @@
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css" type="text/css" media="screen" />
 	<style>
@@ -21,25 +22,25 @@
 			margin: 0;
 		}
 		img {
-		    width:100%;
-            height:100%;
-            object-fit: cover;
-            overflow: hidden;
-        }
+		  width:100%;
+      //height:100%;
+      object-fit: cover;
+      overflow: hidden;
+    }
 		#container {
-            width: 1200px;
-            background-color: #ffcc33;
-            margin: auto;
-        }
+      width: 1200px;
+      background-color: #ffcc33;
+      margin: auto;
+    }
 		#map {
-			width: 650px;
+			width: 500px;
 			height: 500px;
 			float:left
 		}
 		#imageBox{
-		    width:550px;
-		    height:500px;
-		    float:left
+		  width:640px;
+		  height:500px;
+		  float:left
 		}
 	</style>
 
@@ -55,34 +56,42 @@
 <div>
 <script>
 
-    function preload(arrayOfImages) {
-        $(arrayOfImages).each(function(){
-            (new Image()).src = this;
-            // Alternatively you could use:
-            // (new Image()).src = this;
-        });
-    }
 
-    var noGPSPhotos = []
+  var photoPoints =  <GEOJSON_PHOTOS>;
+  var noGPSPhotos = []
     //var photoPoints =  < GEOJSON_PHOTOS>;
 
-    var photoPoints =  <GEOJSON_PHOTOS>;
-    for(var i=0; i<photoPoints.features.length; i++){
-        var lat = photoPoints.features[i].geometry.coordinates[1];
-        if (lat == 0){
-            console.log(photoPoints.features[i].properties.Path)
-            console.log('deleting:'+photoPoints.features[i])
-            noGPSPhotos.push(photoPoints.features[i].properties.Path)
-            photoPoints.features.splice(i, 1);
-        }
-    }
-    console.log(noGPSPhotos)
+  var displayImageNo = -1;
 
-	var map = L.map('map').setView([74.75, -147.45], 9);
+  var avgLat = 0;
+  var avgLng = 0;
+  var numGeoTag = 0;
+  var theMarker = {};
 
 
-    $('.leaflet-container').css('cursor','crosshair');
-	L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
+  for(var i=0; i<photoPoints.features.length; i++){
+      var lat = photoPoints.features[i].geometry.coordinates[1];
+      var lng = photoPoints.features[i].geometry.coordinates[0];
+      if (lat == 0){
+          noGPSPhotos.push(photoPoints.features[i].properties.Path)
+      }
+      else{
+        avgLat = avgLat + lat;
+        avgLng = avgLng + lng;
+        numGeoTag = numGeoTag +1;
+      }
+  }
+
+  avgLat = avgLat/numGeoTag;
+  avgLng = avgLng/numGeoTag;
+
+	var map = L.map('map',{
+	  keyboard: false,
+	}).setView([74.75, -147.45], 9);
+
+
+  $('.leaflet-container').css('cursor','crosshair');
+  L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
 		maxZoom: 18,
 		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
 			'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -104,7 +113,17 @@
 		onEachFeature: onEachFeature,
 
 		pointToLayer: function (feature, latlng) {
+
+		  if(latlng['lng'] ==0){
+        return L.circleMarker([avgLat,avgLng], {
+          GPS: false,
+          radius: 0,
+          opacity: 0,
+          fillOpacity: 0
+        });
+		  }
 			return L.circleMarker(latlng, {
+			  GPS: true,
 				radius: 4,
 				fillColor: "orange",
 				color: "#000",
@@ -115,69 +134,166 @@
 		}
 	}).addTo(map);
 
+
 	map.fitBounds(photoGroup.getBounds());
+
+  function showImage(layer){
+    $("#aImgview").attr("src",layer.feature.properties.Path);
+    $("#aImg").attr("href",layer.feature.properties.Path);
+    $("#aImg").attr("title","Taken: "+layer.feature.properties.Datetime+"<br/>\nFile:"+layer.feature.properties.Path);
+    console.log(layer._latlng)
+
+    if (theMarker != undefined) {
+          map.removeLayer(theMarker);
+    };
+
+    //Add a marker to show where you clicked.
+    if(layer.options.GPS == true){
+      theMarker = L.marker(layer._latlng, {
+          rotationAngle: layer.feature.properties.bearing+15
+          //rotationOrigin: 'center center'
+      }).addTo(map);
+    }
+
+  }
+
 	function onEachFeature(feature, layer) {
-	    //console.log(photoGroup);
-	    layer.on('mouseover', function () {
-            $("#aImgview").attr("src",this.feature.properties.Path);
-            $("#aImg").attr("href",this.feature.properties.Path);
-            $("#aImg").attr("title","Taken: "+this.feature.properties.Datetime+"<br/>\nFile:"+this.feature.properties.Path);
-        });
+	  layer.on('mouseover', function () {
+
+      $("#aImgview").attr("src",this.feature.properties.Path);
+      $("#aImg").attr("href",this.feature.properties.Path);
+      $("#aImg").attr("title","Taken: "+this.feature.properties.Datetime+"<br/>\nFile:"+this.feature.properties.Path);
+    });
 
 	}
 
-	$(function () {
-	    var photoArray=[];
-	    $.each(photoPoints.features, function(index, value) {
-	        var filePath = value.properties.Path;
-	        photoArray.push(filePath);
-	    });
-	    preload(photoArray);
-    });
 
-    $(document).ready(function() {
 
-        $('.image-popup-vertical-fit').magnificPopup({
-            type: 'image',
-            closeOnContentClick: true,
-            mainClass: 'mfp-img-mobile',
-            image: {
-                verticalFit: true
-            },
-            zoom: {
-                enabled: true, // By default it's false, so don't forget to enable it
+  $(document).ready(function() {
 
-                duration: 300, // duration of the effect, in milliseconds
-                easing: 'ease-in-out', // CSS transition easing function
+    // layer = photoGroup.getLayer('0'); //your feature id here
+// 		layer.setStyle({
+//       'fillColor': 'blue',
+//     });
 
-                // The "opener" function should return the element from which popup will be zoomed in
-                // and to which popup will be scaled down
-                // By defailt it looks for an image tag:
-                opener: function(openerElement) {
-                  // openerElement is the element on which popup was initialized, in this case its <a> tag
-                  // you don't need to add "opener" option if this code matches your needs, it's defailt one.
-                  return openerElement.is('img') ? openerElement : openerElement.find('img');
-                }
-              }
-	    });
-    });
-    photoGroup.on({
-        mouseover: function(e) {
-            e.target.setStyle({
-                'fillColor': 'orange'
-            });
-            e.layer.setStyle({
-                 'fillColor': 'blue'
-             });
-        },
-        mouseout: function(e) {
-            //reassignStyle(e.layer);
-            e.layer.setStyle({
-                 'fillColor': 'blue'
-             });
+    $('.image-popup-vertical-fit').magnificPopup({
+      type: 'image',
+      closeOnContentClick: true,
+      mainClass: 'mfp-img-mobile',
+      image: {
+          verticalFit: true
+      },
+      zoom: {
+          enabled: true, // By default it's false, so don't forget to enable it
+
+          duration: 300, // duration of the effect, in milliseconds
+          easing: 'ease-in-out', // CSS transition easing function
+
+          // The "opener" function should return the element from which popup will be zoomed in
+          // and to which popup will be scaled down
+          // By defailt it looks for an image tag:
+          opener: function(openerElement) {
+            // openerElement is the element on which popup was initialized, in this case its <a> tag
+            // you don't need to add "opener" option if this code matches your needs, it's defailt one.
+            return openerElement.is('img') ? openerElement : openerElement.find('img');
+          }
         }
     });
+  });
 
+
+
+  photoGroup.on({
+    mouseover: function(e) {
+      displayImageNo = e.layer.feature.properties.order;
+
+      if (theMarker != undefined) {
+        map.removeLayer(theMarker);
+      };
+
+      //Add a marker to show where you clicked.
+      if(e.layer.options.GPS == true){
+        theMarker = L.marker(e.layer._latlng, {
+            rotationAngle: e.layer.feature.properties.bearing+15
+            //rotationOrigin: 'center center'
+        }).addTo(map);
+      }
+
+
+      e.target.setStyle({
+        'fillColor': 'orange',
+        'radius'   : 4
+      });
+      e.layer.setStyle({
+         'fillColor': 'blue',
+         'radius'   : 8
+       });
+    },
+    mouseout: function(e) {
+      //reassignStyle(e.layer);
+      e.layer.setStyle({
+        'fillColor': 'blue',
+        'radius'   : 8
+       });
+    }
+  });
+
+  $(document).keydown(function(e) {
+     if(e.keyCode == 39){
+        e.preventDefault();
+        displayImageNo = displayImageNo + 1;
+        if(displayImageNo == photoGroup.getLayers().length){
+          displayImageNo = 0;
+        }
+        console.log(displayImageNo)
+        photoGroup.eachLayer(function(layer) {
+          if(layer.feature.properties.order == displayImageNo ){
+            showImage(layer);
+            layer.setStyle({
+              'fillColor': 'blue',
+              'radius'   : 8
+            });
+          }
+          else{
+            layer.setStyle({
+              'fillColor': 'orange',
+              'radius'   : 4
+            });
+
+          }
+
+          //layer.bindPopup(layer.feature.properties.name);
+        });
+
+      }
+     if(e.keyCode == 37){
+        e.preventDefault();
+        displayImageNo = displayImageNo + -1;
+        if(displayImageNo < 0){
+          displayImageNo = photoGroup.getLayers().length-1;
+        }
+        console.log(displayImageNo)
+        photoGroup.eachLayer(function(layer) {
+          if(layer.feature.properties.order == displayImageNo ){
+            showImage(layer);
+            layer.setStyle({
+              'fillColor': 'blue',
+              'radius'   : 8
+            });
+          }
+          else{
+            layer.setStyle({
+              'fillColor': 'orange',
+              'radius'   : 4
+            });
+
+          }
+
+          //layer.bindPopup(layer.feature.properties.name);
+        });
+
+      }
+  });
 
 </script>
 

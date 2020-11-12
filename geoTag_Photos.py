@@ -26,6 +26,7 @@ import sys
 import xml.dom.minidom
 
 import time
+
 import glob
 import os.path
 import imghdr
@@ -277,13 +278,15 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
 
   tags = exifread.process_file(the_file,details=False)
-#   for tag in tags.keys():
-#     if tag not in ('JPEGThumbnail', 'TIFFThumbnail', 'Filename', 'EXIF MakerNote'):
-#         print "Key: %s, value %s" % (tag, tags[tag])
 
   if not os.path.exists('kml'):
     os.mkdir('kml')
   im = Image.open(file_name)
+  try:
+    exif = im.info['exif']
+  except:
+    exif = False
+    print('     No Exif Information')
   width, height = im.size
   newWidth = 640
   newHeight = height/(width/newWidth)
@@ -292,7 +295,10 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
   parts = filename.split('.')
   longname =  path.replace("/",'-')
   smallFileName = 'kml/'+longname+'-'+parts[0]+'_small.'+parts[1]
-  im1 = im1.save(smallFileName)
+  if exif:
+    im1 = im1.save(smallFileName,'JPEG',exif=exif)
+  else:
+    im1 = im1.save(smallFileName,'JPEG')
 
 
 
@@ -305,6 +311,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
   except:
       timestamp = 'No timestamp'
+      date_obj = datetime.strptime("1900:1:1", '%Y:%m:%d')
 
   coords = GetGps(tags)
 
@@ -313,10 +320,13 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
   style = ""
 
+  print(orientation)
   #Handle rotation in the Google earth popup
   if "180" in orientation:
       style = "style='-webkit-transform: rotate(-180deg);'"
-  if "Rotated 90 CCW"  in orientation:
+  if "90 CCW"  in orientation:
+      style = "style='-webkit-transform: rotate(90deg);'"
+  if "90 CW"  in orientation:
       style = "style='-webkit-transform: rotate(90deg);'"
 
   kmlstyle = '#GPSphoto'
@@ -394,14 +404,6 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
     photoPath = splitall(file_name)
     level = 0
 
-#     start with the GPS or not GPS folder
-#     folder = kml_doc.getElementsByTagName('Folder')[0]
-#     for node in kml_doc.getElementsByTagName('Folder'):  # visit every node <bar />
-#       if node.getElementsByTagName("id"):
-#         name = node.getElementsByTagName("id")[0]
-#         if mainId == name.firstChild.data:
-#           folder = node
-
 
     #remove the file name and set up folders in kml
     photoPath = photoPath[:-1]
@@ -432,6 +434,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
 
 
+
   if "EXIF DateTimeOriginal" in tags:
       DateTime = tags.get('EXIF DateTimeOriginal').__str__()
   else:
@@ -442,10 +445,20 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
   else:
       GPSTime = 0
 
+  if "GPS GPSImgDirection" in tags:
+      num,den = tags.get('GPS GPSImgDirection').__str__().split( '/' )
+      photoBearing = int((float(num)/float(den)))
+  else:
+      photoBearing = None
+
   return Feature(geometry=GeoPoint, properties={
-      "Datetime": DateTime,
-      "GPSDate" : GPSTime,
-      "Path"    : "./"+file_name})
+      "visible"  : True,
+      "bearing"  : photoBearing,
+      "order"    : 0,
+      "takenTime": int(time.mktime(date_obj.timetuple())),
+      "Datetime" : DateTime,
+      "GPSDate"  : GPSTime,
+      "Path"     : smallFileName})
 
 
 
@@ -483,11 +496,27 @@ def CreateKmlFile(baseDir,file_names, new_file_name,title):
     features.append(GeoFeature)
     file_iterator += 1
 
+  #Put the photos points in order by datetime of photo
+  features.sort(key=extract_time)
+  num = 0;
+  for feat in features:
+    feat['properties']['order'] = num;
+    num = num + 1;
+
+
   kml_doc = scrubKML(kml_doc)
   kml_file = open(new_file_name, 'w')
   kml_file.write(kml_doc.toprettyxml())
   feature_collection = FeatureCollection(features)
   return json.dumps(feature_collection)
+
+def extract_time(json):
+    try:
+        # Also convert to int since update_time will be string.  When comparing
+        # strings, "10" is smaller than "2".
+        return int(json['properties']['takenTime'])
+    except KeyError:
+        return 0
 
 
 
