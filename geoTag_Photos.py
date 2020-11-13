@@ -437,8 +437,11 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
   if "EXIF DateTimeOriginal" in tags:
       DateTime = tags.get('EXIF DateTimeOriginal').__str__()
+      date_obj = datetime.strptime(DateTime, '%Y:%m:%d %H:%M:%S')
+      date_time = date_obj.strftime("%m/%d/%Y, %H:%M:%S")
+
   else:
-      DateTime = 0
+      date_time = 0
 
   if "GPS GPSDate" in tags:
       GPSTime = tags.get('GPS GPSDate').__str__()
@@ -456,7 +459,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
       "bearing"  : photoBearing,
       "order"    : 0,
       "takenTime": int(time.mktime(date_obj.timetuple())),
-      "Datetime" : DateTime,
+      "Datetime" : date_time,
       "GPSDate"  : GPSTime,
       "Path"     : smallFileName})
 
