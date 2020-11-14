@@ -279,8 +279,8 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
   tags = exifread.process_file(the_file,details=False)
 
-  if not os.path.exists('kml'):
-    os.mkdir('kml')
+  if not os.path.exists('geoPhotos'):
+    os.mkdir('geoPhotos')
   im = Image.open(file_name)
   try:
     exif = im.info['exif']
@@ -294,11 +294,13 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
   im1 = im.resize(newsize)
   parts = filename.split('.')
   longname =  path.replace("/",'-')
-  smallFileName = 'kml/'+longname+'-'+parts[0]+'_small.'+parts[1]
+  today = datetime.now()
+
+  smallFileName = today.strftime("%Y%m%d")+'-'+longname+'-'+parts[0]+'_small.'+parts[1]
   if exif:
-    im1 = im1.save(smallFileName,'JPEG',exif=exif)
+    im1 = im1.save('geoPhotos/'+smallFileName,'JPEG',exif=exif)
   else:
-    im1 = im1.save(smallFileName,'JPEG')
+    im1 = im1.save('geoPhotos/'+smallFileName,'JPEG')
 
 
 
@@ -363,7 +365,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
   base = os.path.splitext(file_name)[0]
   ext = os.path.splitext(file_name)[1]
   file_name = base + ext.lower()
-  cdata = "<h3>Date: "+timestamp+"</h3><h3>Latitude: "+str(coords[0])+"</h3><h3>Longitude: "+str(coords[1])+"</h3><img src='"+smallFileName+"' width=600 "+style+" >"
+  cdata = "<h3>Date: "+timestamp+"</h3><h3>Latitude: "+str(coords[0])+"</h3><h3>Longitude: "+str(coords[1])+"</h3><img src='geoPhotos/"+smallFileName+"' width=600 "+style+" >"
 
   description.appendChild(kml_doc.createCDATASection(cdata))
   po.appendChild(name)
@@ -546,7 +548,7 @@ def main():
   for subdir, dirs, files in os.walk(baseDir):
     for file in files:
         toss, file_extension = os.path.splitext(os.path.relpath(subdir+'/'+file))
-        if '/kml' in subdir:
+        if '/geoPhotos' in subdir:
           continue
         if(imghdr.what(os.path.relpath(subdir+'/'+file)) == 'jpeg'):
           filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
@@ -566,29 +568,30 @@ def main():
   else:
     title = os.path.split(os.getcwd())[1]
     geoJsonCollection = CreateKmlFile(baseDir,filelist,kmlFileName,title)
-    kmlSmallImages = os.listdir('kml/')
+    kmlSmallImages = os.listdir('geoPhotos/')
+
+    #input file
+    fin = open(geoPhotoDir+"/LeafletMap_template.html", "rt")
+    #output file to write the result to
+    fout = open(baseDir+"/geoPhotos/Working_LeafletMap.html", "wt")
+    #for each line in the input file
+    for line in fin:
+      #read replace the string and write to output file
+      fout.write(line.replace('<GEOJSON_PHOTOS>', geoJsonCollection))
+    #close input and output files
+    fin.close()
+    fout.close()
 
     timestr = time.strftime(baseDir+"/GeoTagged_Photos_Processed %Y_%m_%d.kmz")
     zf = zipfile.ZipFile(timestr, mode='w')
     for file in kmlSmallImages:
-      zf.write('kml/'+file)
-
+      zf.write('geoPhotos/'+file)
 
     zf.write(kmlFileName)
+    zf.write('geoPhotos/Working_LeafletMap.html')
     zf.close()
 
 
-  #input file
-  fin = open(geoPhotoDir+"/LeafletMap_template.html", "rt")
-  #output file to write the result to
-  fout = open(baseDir+"/Working_LeafletMap.html", "wt")
-  #for each line in the input file
-  for line in fin:
-    #read replace the string and write to output file
-    fout.write(line.replace('<GEOJSON_PHOTOS>', geoJsonCollection))
-  #close input and output files
-  fin.close()
-  fout.close()
 
 if __name__ == '__main__':
   main()

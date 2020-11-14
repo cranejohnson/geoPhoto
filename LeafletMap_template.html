@@ -59,8 +59,8 @@
 <body>
 <center>
 <h3>APRFC Photo Viewer</h3>
-<i>Use the left and right arrow keys, hover over a point or the buttons below to view photos</i><br>
-<button id="back"> Previous Photo </button><button id="forward"> Next Photo </button>
+<i>Use the <strong>left</strong> and <strong>right</strong> arrow keys, click a point on the map or use the buttons below to view photos</i><br>
+<button id="back"> Previous Photo </button><button id="forward"> Next Photo </button>  <input type="checkbox" id="autoPan" checked ><label for="autoPan"> Auto Pan Enabled</label><br>
 </center>
 
 <div id='container'>
@@ -214,11 +214,13 @@
 
 
 
-
     if (theMarker != undefined) {
           map.removeLayer(theMarker);
     };
 
+    if((layer.options.GPS == true) && ($('#autoPan').is(":checked"))){
+      map.flyTo(layer._latlng)
+    }
 
     //Add a marker to show where you clicked.
     if((layer.options.GPS == true)&& (layer.feature.properties.bearing != null)){
@@ -296,7 +298,7 @@
 
 
   photoGroup.on({
-    mouseover: function(e) {
+    click: function(e) {
       displayImageNo = e.layer.feature.properties.order;
 
       showImage(e.layer);
@@ -309,14 +311,8 @@
          'fillColor': 'blue',
          'radius'   : 8
        });
-    },
-    mouseout: function(e) {
-      //reassignStyle(e.layer);
-      e.layer.setStyle({
-        'fillColor': 'blue',
-        'radius'   : 8
-       });
     }
+
   });
 
   $( "#back" ).click(function() {
