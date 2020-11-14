@@ -26,19 +26,17 @@ import sys
 import xml.dom.minidom
 
 import time
+import subprocess
 
 import glob
 import os.path
 import imghdr
 import zipfile
 import exifread
-import tkinter as tk
+
 from datetime import datetime
 
-try:
-  from tkinter import filedialog
-except ImportError:
-  import tkFileDialog
+
 from geojson import Point, Feature, FeatureCollection, dump
 import json
 
@@ -527,17 +525,15 @@ def extract_time(json):
 
 def main():
 
-  root = tk.Tk()
-  T = tk.Text(root, height=4, width=80)
-  T.pack()
-  T.insert(tk.END, "Instructions:\n\nSelect the top directory of photos to encode in a KMZ file.\nAll photos below this directory will be included.")
-  v = tk.IntVar()
+  rcode = subprocess.call(['python', 'getInput.py'])
 
-  geoPhotoDir = os.getcwd()
-  try:
-    baseDir = tkFileDialog.askdirectory(initialdir = os.getcwd(),title="Select top directory with pictures")
-  except:
-    baseDir = filedialog.askdirectory(initialdir = os.getcwd(),title="Select top directory with pictures")
+  config = []
+
+  for line in open('parameters.input', 'r'):
+    config.append(line.strip().split('>'))
+
+  print(config)
+  exit()
   #value = input("Please enter path to top photo directory [enter for current directory]:")
   if len(baseDir) < 1:
     baseDir =os.getcwd()
