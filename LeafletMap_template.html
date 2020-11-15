@@ -3,16 +3,19 @@
 <html>
 <head>
 
-	<title>GeoJSON tutorial - Leaflet</title>
+	<title>APRFC Photo Viewer</title>
 
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css" type="text/css" media="screen" />
-
+      <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+         rel = "stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous"></script>
 
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
@@ -51,7 +54,45 @@
 		  width:640px;
 		  height:500px;
 		  float:left
-		}
+    }
+    .ui-slider  {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+      width: 40%;
+      height: 15px;
+      padding-left: 5px; //add this
+    }
+
+    .ui-slider .ui-slider-handle {
+        height: 20px;
+        width: 5px;
+        padding-left: 10px; //add this
+    }
+
+    .ui-widget-header{
+      opacity: 0.3
+    }
+    .ui-slider-tick-mark{
+      display:inline-block;
+      width:2px;
+      background:black;
+      height:27px;
+      position:absolute;
+      top: -5px;
+      left:-2px;
+    }
+    .ui-slider-photos{
+      display:inline-block;
+      width:1px;
+      background:grey;
+      height:16px;
+      position:absolute;
+      left:-2px;
+    }
+    #dates {
+        width:300px;
+    }
 	</style>
 
 
@@ -61,9 +102,18 @@
 <h3>APRFC Photo Viewer</h3>
 <i>Use the <strong>left</strong> and <strong>right</strong> arrow keys, click a point on the map or use the buttons below to view photos</i><br>
 <button id="back"> Previous Photo </button><button id="forward"> Next Photo </button>  <input type="checkbox" id="autoPan" checked ><label for="autoPan"> Auto Pan Enabled</label><br>
+
+<p>
+  <label for = "dates">Date range:</label>
+  <input type = "text" id = "dates"
+    style = "border:0; color:black; font-weight:bold;">
+</p>
 </center>
+<div id = "slider-range"></div>
+<br>
 
 <div id='container'>
+
     <div id='mapid'></div>
     <div id='imageBox'>
         <span id='photoInfo'></span>
@@ -84,21 +134,30 @@
   var avgLng = 0;
   var numGeoTag = 0;
   var theMarker = {};
+  var dateRange = [0,0];
+  var maxMinOrder = [99999,0];
+  var photoGroup = {};
 
 
   //Get the average lat/lon of the photos
   for(var i=0; i<photoPoints.features.length; i++){
-      var lat = photoPoints.features[i].geometry.coordinates[1];
-      var lng = photoPoints.features[i].geometry.coordinates[0];
-      if (lat > 0){
-        avgLat = avgLat + lat;
-        avgLng = avgLng + lng;
-        numGeoTag = numGeoTag +1;
-      }
+    var lat = photoPoints.features[i].geometry.coordinates[1];
+    var lng = photoPoints.features[i].geometry.coordinates[0];
+    if((photoPoints.features[i].properties.takenTime > 0) && ( dateRange[0] ==0 )){
+      dateRange[0] = parseInt(photoPoints.features[i].properties.takenTime/3600)*3600-8*3600;
+    }
+    if(photoPoints.features[i].properties.takenTime > 0)  {
+      dateRange[1] = photoPoints.features[i].properties.takenTime+8*3600
+    }
+    if (lat > 0){
+      avgLat = avgLat + lat;
+      avgLng = avgLng + lng;
+      numGeoTag = numGeoTag +1;
+    }
   }
   avgLat = avgLat/numGeoTag;
   avgLng = avgLng/numGeoTag;
-
+  console.log(dateRange)
 
   //setup leaflet base layers
   var esriTopo = L.esri.basemapLayer("Topographic");
@@ -159,51 +218,75 @@
     labelTemplateLng:"Lon: {x}"}).addTo(map);
 
 
- //  $('.leaflet-container').css('cursor','crosshair');
-//   L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-// 		maxZoom: 18,
-// 		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
-// 			'<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
-// 			'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-// 		id: 'mapbox/light-v9',
-// 		tileSize: 512,
-// 		zoomOffset: -1
-// 	}).addTo(map);
 
 
 
-
-	var photoGroup = L.geoJSON(photoPoints, {
-
-		style: function (feature) {
-			return feature.properties && feature.properties.style;
-		},
+  function showFilter(feature) {
+    if ((feature.properties.takenTime > dateRange[0]) && (feature.properties.takenTime < dateRange[1])) return true
+  }
 
 
-		pointToLayer: function (feature, latlng) {
 
-		  if(latlng['lng'] ==0){
-        return L.circleMarker([avgLat,avgLng], {
-          GPS: false,
-          radius: 0,
-          opacity: 0,
-          fillOpacity: 0
+  function plotPhotos(photoPoints){
+    maxMinOrder = [99999,0];
+    var photoGroup = L.geoJSON(photoPoints, {
+      filter: showFilter,
+      style: function (feature) {
+        return feature.properties && feature.properties.style;
+      },
+
+      pointToLayer: function (feature, latlng) {
+        if(feature.properties.order < maxMinOrder[0]) maxMinOrder[0] =  feature.properties.order;
+        if(feature.properties.order > maxMinOrder[1]) maxMinOrder[1] =  feature.properties.order;
+
+        if(latlng['lng'] ==0){
+          return L.circleMarker([avgLat,avgLng], {
+            GPS: false,
+            radius: 0,
+            opacity: 0,
+            fillOpacity: 0
+          });
+        }
+        return L.circleMarker(latlng, {
+          GPS: true,
+          radius: 4,
+          fillColor: "orange",
+          color: "#000",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8
         });
-		  }
-			return L.circleMarker(latlng, {
-			  GPS: true,
-				radius: 4,
-				fillColor: "orange",
-				color: "#000",
-				weight: 1,
-				opacity: 1,
-				fillOpacity: 0.8
-			});
-		}
-	}).addTo(map);
+      }
+    }).addTo(map);
+
+    console.log(maxMinOrder);
+    photoGroup.on({
+      click: function(e) {
+        displayImageNo = e.layer.feature.properties.order;
+
+        showImage(e.layer);
+
+        e.target.setStyle({
+          'fillColor': 'orange',
+          'radius'   : 4
+        });
+        e.layer.setStyle({
+           'fillColor': 'blue',
+           'radius'   : 8
+         });
+      }
+
+    });
 
 
-	map.fitBounds(photoGroup.getBounds());
+    return photoGroup;
+  }
+
+  photoGroup = plotPhotos(photoPoints);
+
+  map.fitBounds(photoGroup.getBounds());
+
+
 
   function showImage(layer){
     $("#aImgview").attr("src",layer.feature.properties.Path);
@@ -229,14 +312,62 @@
           //rotationOrigin: 'center center'
       }).addTo(map);
     }
+  setSliderTick("#slider-range",layer.feature.properties.takenTime)
+  }
 
+  function setSliderTick(el,tick) {
+    var $slider =  $(el);
+    var max =  $slider.slider("option", "max");
+    var min =  $slider.slider("option", "min");
+
+	  var spacing =  100/((max - min)/(tick-min));
+
+    $slider.find('.ui-slider-tick-mark').remove();
+
+    $('<span class="ui-slider-tick-mark"></span>').css('left', (spacing) +  '%').appendTo($slider);
+  }
+
+  function setSliderPhotos(el,tick) {
+    var $slider =  $(el);
+    var max =  $slider.slider("option", "max");
+    var min =  $slider.slider("option", "min");
+
+	  var spacing =  100/((max - min)/(tick-min));
+
+
+    console.log(spacing)
+
+    $('<span class="ui-slider-photos"></span>').css('left', (spacing) +  '%').appendTo($slider);
   }
 
 
-
-
-
   $(document).ready(function() {
+
+
+    $( "#slider-range" ).slider({
+      range: true,
+      min: dateRange[0],
+      max: dateRange[1],
+      step: 3600,
+      values: dateRange,
+      slide: function( event, ui ) {
+        $( "#dates" ).val( (new Date(ui.values[ 0 ] *1000).toLocaleString() ) + " - " + (new Date(ui.values[ 1 ] *1000)).toLocaleString() );
+        map.removeLayer(photoGroup);
+        dateRange[0] = ui.values[ 0 ];
+        dateRange[1] = ui.values[ 1 ];
+        photoGroup = plotPhotos(photoPoints);
+      }
+      });
+
+      $( "#dates" ).val( (new Date($( "#slider-range" ).slider( "values", 0 )*1000).toLocaleString()) +
+        " - " + (new Date($( "#slider-range" ).slider( "values", 1 )*1000)).toLocaleString());
+
+    $("#slider-range .ui-slider-handle").unbind('keydown');
+
+    for(var i=0; i<photoPoints.features.length; i++){
+      setSliderPhotos("#slider-range",photoPoints.features[i].properties.takenTime);
+    }
+
 
 
     $('.image-popup-vertical-fit').magnificPopup({
@@ -264,73 +395,62 @@
     });
   });
 
-  function nextPhoto(upDown){
-        displayImageNo = displayImageNo + upDown;
+  function nextPhoto(upDown,photoGroup){
+    displayImageNo = displayImageNo + upDown;
 
-        if(displayImageNo < 0){
-          displayImageNo = photoGroup.getLayers().length+upDown;
-        }
-        if(displayImageNo == photoGroup.getLayers().length){
-          displayImageNo = 0;
-        }
+    var display = false;
 
-        photoGroup.eachLayer(function(layer) {
-          if(layer.feature.properties.order == displayImageNo ){
-            showImage(layer);
-            layer.setStyle({
-              'fillColor': 'blue',
-              'radius'   : 8
-            });
-          }
-          else{
-            layer.setStyle({
-              'fillColor': 'orange',
-              'radius'   : 4
-            });
+    console.log(displayImageNo)
+    if(displayImageNo < maxMinOrder[0]){
+      displayImageNo = maxMinOrder[1]+upDown;
+    }
+    if(displayImageNo >= maxMinOrder[1]){
+      displayImageNo = maxMinOrder[0];
+    }
 
-          }
+    photoGroup.eachLayer(function(layer) {
+      if(layer.feature.properties.order == displayImageNo ){
 
-          //layer.bindPopup(layer.feature.properties.name);
+        showImage(layer);
+        layer.setStyle({
+          'fillColor': 'blue',
+          'radius'   : 8
         });
+      }
+      else{
+        layer.setStyle({
+          'fillColor': 'orange',
+          'radius'   : 4
+        });
+
+      }
+
+
+
+      //layer.bindPopup(layer.feature.properties.name);
+    });
 
 
   }
 
 
-  photoGroup.on({
-    click: function(e) {
-      displayImageNo = e.layer.feature.properties.order;
-
-      showImage(e.layer);
-
-      e.target.setStyle({
-        'fillColor': 'orange',
-        'radius'   : 4
-      });
-      e.layer.setStyle({
-         'fillColor': 'blue',
-         'radius'   : 8
-       });
-    }
-
-  });
 
   $( "#back" ).click(function() {
-    nextPhoto(-1);
+    nextPhoto(-1,photoGroup);
   });
 
   $( "#forward" ).click(function() {
-    nextPhoto(1);
+    nextPhoto(1,photoGroup);
   });
 
   $(document).keydown(function(e) {
      if(e.keyCode == 39){
         e.preventDefault();
-        nextPhoto(1);
+        nextPhoto(1,photoGroup);
       }
      if(e.keyCode == 37){
         e.preventDefault();
-        nextPhoto(-1);
+        nextPhoto(-1,photoGroup);
      }
   });
 

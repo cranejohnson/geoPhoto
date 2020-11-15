@@ -27,12 +27,15 @@ import xml.dom.minidom
 
 import time
 import subprocess
+import configparser
 
 import glob
 import os.path
 import imghdr
 import zipfile
 import exifread
+import webbrowser
+
 
 from datetime import datetime
 
@@ -252,7 +255,7 @@ def scrubKML(kml_doc):
   return kml_doc
 
 
-def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
+def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
   """Creates a PhotoOverlay element in the kml_doc element.
 
   Args:
@@ -266,14 +269,9 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
   """
 
   photo_id = 'photo%s' % file_iterator
-
   folderId = '-'.join(splitall(file_name)[:-1])
 
   path,filename = os.path.split(file_name)
-
-
-
-
 
   tags = exifread.process_file(the_file,details=False)
 
@@ -285,11 +283,15 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
   except:
     exif = False
     print('     No Exif Information')
+
+  #Get image width and height and scale based on user width
   width, height = im.size
-  newWidth = 640
-  newHeight = height/(width/newWidth)
-  newsize = (int(newWidth), int(newHeight))
+
+  newHeight = height/(width/resizeWidth)
+  newsize = (int(resizeWidth), int(newHeight))
   im1 = im.resize(newsize)
+
+
   parts = filename.split('.')
   longname =  path.replace("/",'-')
   today = datetime.now()
@@ -299,10 +301,6 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
     im1 = im1.save('geoPhotos/'+smallFileName,'JPEG',exif=exif)
   else:
     im1 = im1.save('geoPhotos/'+smallFileName,'JPEG')
-
-
-
-
 
 
   try:
@@ -465,14 +463,13 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator):
 
 
 
-def CreateKmlFile(baseDir,file_names, new_file_name,title):
+def CreateKmlFile(baseDir,file_names, new_file_name,resizeWidth,title):
   """Creates the KML Document with the PhotoOverlays, and writes it to a file.
   Args:
     file_names: A list object of all the names of the files.
     new_file_name: A string of the name of the new file to be created.
   """
   features = []
-
   files = {}
 
   kml_doc = CreateKmlDoc(title)
@@ -495,7 +492,7 @@ def CreateKmlFile(baseDir,file_names, new_file_name,title):
   #for key in files.iterkeys():
     print('-------------------------------')
     print('Working on File: ' + str(key) )
-    GeoFeature = CreatePhotoOverlay(kml_doc, key, files[key], file_iterator)
+    GeoFeature = CreatePhotoOverlay(kml_doc, key, files[key], file_iterator,resizeWidth)
     features.append(GeoFeature)
     file_iterator += 1
 
@@ -523,17 +520,22 @@ def extract_time(json):
 
 
 
+
 def main():
 
   rcode = subprocess.call(['python', 'getInput.py'])
 
-  config = []
+  geoPhotoDir = os.path.dirname(os.path.realpath(__file__))
 
-  for line in open('parameters.input', 'r'):
-    config.append(line.strip().split('>'))
 
-  print(config)
-  exit()
+  config = configparser.ConfigParser()
+  config.readfp(open(r'parameters.input'))
+  baseDir = config.get('geoPhoto', 'dir')
+  resizeWidth = int(config.get('geoPhoto', 'width'))
+
+  print(baseDir)
+
+
   #value = input("Please enter path to top photo directory [enter for current directory]:")
   if len(baseDir) < 1:
     baseDir =os.getcwd()
@@ -563,7 +565,7 @@ def main():
 
   else:
     title = os.path.split(os.getcwd())[1]
-    geoJsonCollection = CreateKmlFile(baseDir,filelist,kmlFileName,title)
+    geoJsonCollection = CreateKmlFile(baseDir,filelist,kmlFileName,resizeWidth,title)
     kmlSmallImages = os.listdir('geoPhotos/')
 
     #input file
@@ -587,6 +589,17 @@ def main():
     zf.write('geoPhotos/Working_LeafletMap.html')
     zf.close()
 
+  # MacOS
+  mac_chrome_path = 'open -a /Applications/Google\ Chrome.app %s'
+
+  # Windows
+  windows_chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+
+  # Linux
+  # chrome_path = '/usr/bin/google-chrome %s'
+
+  webbrowser.get(windows_chrome_path).open(baseDir+'/geoPhotos/Working_LeafletMap.html')
+  webbrowser.get(mac_chrome_path).open(baseDir+'/geoPhotos/Working_LeafletMap.html')
 
 
 if __name__ == '__main__':
