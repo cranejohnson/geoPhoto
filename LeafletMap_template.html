@@ -16,6 +16,7 @@
       <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
          rel = "stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous"></script>
+    <script src="https://www.weather.gov/source/aprfc/js/jquery.ui.slider.custom.js"></script>
 
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
@@ -325,8 +326,8 @@
 
   function setSliderTick(el,tick) {
     var $slider =  $(el);
-    var max =  $slider.slider("option", "max");
-    var min =  $slider.slider("option", "min");
+    var max =  $slider.dragslider("option", "max");
+    var min =  $slider.dragslider("option", "min");
 
 	  var spacing =  100/((max - min)/(tick-min));
 
@@ -337,8 +338,8 @@
 
   function setSliderPhotos(el,tick) {
     var $slider =  $(el);
-    var max =  $slider.slider("option", "max");
-    var min =  $slider.slider("option", "min");
+    var max =  $slider.dragslider("option", "max");
+    var min =  $slider.dragslider("option", "min");
 
 	  var spacing =  100/((max - min)/(tick-min));
 
@@ -352,12 +353,13 @@
   $(document).ready(function() {
 
 
-    $( "#slider-range" ).slider({
+    $( "#slider-range" ).dragslider({
       range: true,
       min: dateRange[0],
       max: dateRange[1],
       step: 3600,
       values: dateRange,
+      rangeDrag: true, // Enable range dragging.
       slide: function( event, ui ) {
         $( "#dates" ).val( (new Date(ui.values[ 0 ] *1000).toLocaleString() ) + " - " + (new Date(ui.values[ 1 ] *1000)).toLocaleString() );
         map.removeLayer(photoGroup);
@@ -367,8 +369,8 @@
       }
       });
 
-      $( "#dates" ).val( (new Date($( "#slider-range" ).slider( "values", 0 )*1000).toLocaleString()) +
-        " - " + (new Date($( "#slider-range" ).slider( "values", 1 )*1000)).toLocaleString());
+      $( "#dates" ).val( (new Date($( "#slider-range" ).dragslider( "values", 0 )*1000).toLocaleString()) +
+        " - " + (new Date($( "#slider-range" ).dragslider( "values", 1 )*1000)).toLocaleString());
 
     $("#slider-range .ui-slider-handle").unbind('keydown');
 
