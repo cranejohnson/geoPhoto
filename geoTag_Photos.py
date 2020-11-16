@@ -35,6 +35,7 @@ import imghdr
 import zipfile
 import exifread
 import webbrowser
+from PIL import Image
 
 
 from datetime import datetime
@@ -44,12 +45,6 @@ from geojson import Point, Feature, FeatureCollection, dump
 import json
 
 
-hasPil = False
-try:
-  from PIL import Image
-  hasPil = True
-except:
-  hasPil = False
 
 
 def splitall(path):
