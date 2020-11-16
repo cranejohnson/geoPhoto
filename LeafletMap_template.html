@@ -94,6 +94,20 @@
     #dates {
         width:300px;
     }
+
+    .leaflet-control-zoom-display {
+        background-color: #fff;
+        border-bottom: 1px solid #ccc;
+        width: 26px;
+        height: 26px;
+        line-height: 26px;
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        color: black;
+        padding-top: 0.3em;
+        font: bold 12px/20px Tahoma, Verdana, sans-serif;
+    }
 	</style>
 
 
@@ -148,10 +162,10 @@
     var lat = photoPoints.features[i].geometry.coordinates[1];
     var lng = photoPoints.features[i].geometry.coordinates[0];
     if((photoPoints.features[i].properties.takenTime > 0) && ( dateRange[0] ==0 )){
-      dateRange[0] = parseInt(photoPoints.features[i].properties.takenTime/3600)*3600-8*3600;
+      dateRange[0] = parseInt(photoPoints.features[i].properties.takenTime/3600)*3600-2*3600;
     }
     if(photoPoints.features[i].properties.takenTime > 0)  {
-      dateRange[1] = photoPoints.features[i].properties.takenTime+8*3600
+      dateRange[1] = photoPoints.features[i].properties.takenTime+2*3600
     }
     if (lat > 0){
       avgLat = avgLat + lat;
@@ -306,11 +320,12 @@
 
     if((layer.options.GPS == true) && ($('#autoPan').is(":checked"))){
       if($('#autoZoom').is(":checked")){
-              console.log($( "#zoomLevel" ).val())
+
               map.flyTo(layer._latlng,parseInt($( "#zoomLevel" ).val()))
       }
       else{
-        map.flyTo(layer._latlng);
+        var zl = parseInt(map.getZoom());
+        map.flyTo(layer._latlng,zl);
       }
     }
 

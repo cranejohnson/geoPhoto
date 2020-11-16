@@ -543,6 +543,7 @@ def main():
   os.chdir(baseDir)
   filelist = []
   outFileName = os.path.split(baseDir)[1]
+  print(outFileName)
   for subdir, dirs, files in os.walk(baseDir):
     for file in files:
         toss, file_extension = os.path.splitext(os.path.relpath(subdir+'/'+file))
@@ -571,7 +572,7 @@ def main():
     #input file
     fin = open(geoPhotoDir+"/LeafletMap_template.html", "rt")
     #output file to write the result to
-    fout = open(baseDir+"/geoPhotos/Working_LeafletMap.html", "wt")
+    fout = open(baseDir+"/geoPhotos/"+title+"_map.html", "wt")
     #for each line in the input file
     for line in fin:
       #read replace the string and write to output file
@@ -586,7 +587,7 @@ def main():
       zf.write('geoPhotos/'+file)
 
     zf.write(kmlFileName)
-    zf.write('geoPhotos/Working_LeafletMap.html')
+    zf.write("geoPhotos/"+title+"_map.html")
     zf.close()
 
   # MacOS
@@ -598,8 +599,8 @@ def main():
   # Linux
   # chrome_path = '/usr/bin/google-chrome %s'
 
-  webbrowser.get(windows_chrome_path).open(baseDir+'/geoPhotos/Working_LeafletMap.html')
-  webbrowser.get(mac_chrome_path).open(baseDir+'/geoPhotos/Working_LeafletMap.html')
+  webbrowser.get(windows_chrome_path).open(baseDir+"/geoPhotos/"+title+"_map.html")
+  webbrowser.get(mac_chrome_path).open(baseDir+"/geoPhotos/"+title+"_map.html")
 
 
 if __name__ == '__main__':
