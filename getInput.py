@@ -61,11 +61,9 @@ def fileCallback():
     for subdir, dirs, files in os.walk(baseDir):
       for file in files:
           toss, file_extension = os.path.splitext(os.path.relpath(subdir+'/'+file))
-          if '/geoPhotos' in subdir:
+          if 'geoPhotos' in subdir:
             continue
           if(imghdr.what(os.path.relpath(subdir+'/'+file)) == 'jpeg'):
-            filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
-          elif (file_extension.upper() == '.JPG'):
             filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
           else:
             print('File: '+os.path.relpath(subdir+'/'+file)+' is not and image file')
