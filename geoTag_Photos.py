@@ -1,7 +1,13 @@
-#!/usr/bin/python2.4
-# -*- coding: cp1252 -*-
-#
-# Copyright 2008 Google Inc. All Rights Reserved.
+"""
+Steps to run on windows (python3 with packages):
+  1.  Install anaconda3 for individual user (no admin required)
+    a. https://anaconda.com/products/individual (scroll to the bottom for windows 64-bit installed)
+  2.  In a directory for the python project run:
+        'git clone https://github.com/cranejohnson/geoPhoto.git'
+  3.  Open 'Anaconda prompt' from the windows start menu
+  4.  Navigate to the geoPhotos project directory and run 'python geoTag_Photos.py'
+
+"""
 
 """Reads the EXIF headers from geo-tagged photos. and creates a KML file.
 
@@ -542,11 +548,11 @@ def main():
     for file in files:
         toss, file_extension = os.path.splitext(os.path.relpath(subdir+'/'+file))
         if 'geoPhotos' in subdir:
-          continue
+            continue
         if(imghdr.what(os.path.relpath(subdir+'/'+file)) == 'jpeg'):
           filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
-        elif (file_extension.upper() == '.JPG'):
-          filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
+#        elif (file_extension.upper() == '.JPG'):
+#          filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
         else:
           print('File: '+os.path.relpath(subdir+'/'+file)+' is not and image file')
           print(imghdr.what(os.path.relpath(subdir+'/'+file)))
