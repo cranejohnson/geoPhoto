@@ -1,13 +1,13 @@
 """
 Steps to run on windows (python3 with packages):
   1.  Install anaconda3 for individual user (no admin required)
-    a. https://anaconda.com/products/individual (scroll to the bottom for windows 64-bit installed)
-  2.  In a directory for the python project run:
+      a. https://anaconda.com/products/individual (scroll to the bottom for windows 64-bit installed)
+  2.  Open 'Anaconda prompt' from the windows start menu
+  3.  In a directory where you want this project loaded:
         'git clone https://github.com/cranejohnson/geoPhoto.git'
-  3.  Open 'Anaconda prompt' from the windows start menu
   4.  Run 'conda install -c conda-forge geojson'  to install geojson 
   5.  Run 'conda install -c conda-forge exifread' to install exifread
-  4.  Navigate to the geoPhotos project directory and run 'python geoTag_Photos.py'
+  6.  In the geoPhoto directory run 'python geoTag_Photos.py'
 
 """
 
