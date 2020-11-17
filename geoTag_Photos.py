@@ -518,7 +518,7 @@ def extract_time(json):
 
 def main():
 
-  rcode = subprocess.call(['python', 'getInput.py'])
+  rcode = subprocess.call([sys.executable, 'getInput.py'])
 
   geoPhotoDir = os.path.dirname(os.path.realpath(__file__))
 
