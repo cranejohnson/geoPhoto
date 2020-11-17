@@ -3,10 +3,18 @@ import os.path
 import imghdr
 import signal
 
+#handle mac or windows
+
 try:
   from tkinter import filedialog
 except ImportError:
   import tkFileDialog
+
+
+#remove config file if it exists
+if os.path.exists("parameters.input"):
+  os.remove("parameters.input")
+
 
 window = tkinter.Tk()
 
@@ -73,7 +81,7 @@ def fileCallback():
     fileNum.delete(0, tkinter.END)
     fileNum.insert(0, numFiles)
     fileNum.config(state="disabled")
- 
+
 
 
 infoBlock = tkinter.Label(text="Instructions:\n\nEnter the information below and then select the top directory of photos to process.\nAll photos below this directory will be included.\n\n")
