@@ -431,10 +431,10 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
   if "EXIF DateTimeOriginal" in tags:
       DateTime = tags.get('EXIF DateTimeOriginal').__str__()
       date_obj = datetime.strptime(DateTime, '%Y:%m:%d %H:%M:%S')
-      date_time = date_obj.strftime("%m/%d/%Y, %H:%M:%S")
+      takenTime = int(time.mktime(date_obj.timetuple()))
 
   else:
-      date_time = 0
+      takenTime = 0
 
   if "GPS GPSDate" in tags:
       GPSTime = tags.get('GPS GPSDate').__str__()
@@ -451,8 +451,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
       "visible"  : True,
       "bearing"  : photoBearing,
       "order"    : 0,
-      "takenTime": int(time.mktime(date_obj.timetuple())),
-      "Datetime" : date_time,
+      "takenTime": takenTime,
       "GPSDate"  : GPSTime,
       "Path"     : smallFileName})
 
@@ -542,7 +541,7 @@ def main():
   for subdir, dirs, files in os.walk(baseDir):
     for file in files:
         toss, file_extension = os.path.splitext(os.path.relpath(subdir+'/'+file))
-        if '/geoPhotos' in subdir:
+        if 'geoPhotos' in subdir:
           continue
         if(imghdr.what(os.path.relpath(subdir+'/'+file)) == 'jpeg'):
           filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
