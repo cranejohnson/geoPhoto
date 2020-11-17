@@ -427,9 +427,9 @@
 
     console.log(displayImageNo)
     if(displayImageNo < maxMinOrder[0]){
-      displayImageNo = maxMinOrder[1]+upDown;
+      displayImageNo = maxMinOrder[1];
     }
-    if(displayImageNo >= maxMinOrder[1]){
+    if(displayImageNo > maxMinOrder[1]){
       displayImageNo = maxMinOrder[0];
     }
 

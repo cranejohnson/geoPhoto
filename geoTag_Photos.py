@@ -291,7 +291,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
   longname =  path.replace("/",'-')
   today = datetime.now()
 
-  smallFileName = today.strftime("%Y%m%d")+'-'+longname+'-'+parts[0]+'_small.'+parts[1]
+  smallFileName = today.strftime("%Y%m%d")+'-'+longname+'-'+parts[0]+'_small.jpg'
   if exif:
     im1 = im1.save('geoPhotos/'+smallFileName,'JPEG',exif=exif)
   else:
