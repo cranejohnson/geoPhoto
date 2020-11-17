@@ -5,6 +5,8 @@ Steps to run on windows (python3 with packages):
   2.  In a directory for the python project run:
         'git clone https://github.com/cranejohnson/geoPhoto.git'
   3.  Open 'Anaconda prompt' from the windows start menu
+  4.  Run 'conda install -c conda-forge geojson'  to install geojson 
+  5.  Run 'conda install -c conda-forge exifread' to install exifread
   4.  Navigate to the geoPhotos project directory and run 'python geoTag_Photos.py'
 
 """
@@ -40,6 +42,7 @@ import os.path
 import imghdr
 import zipfile
 import exifread
+
 import webbrowser
 from PIL import Image
 
@@ -551,8 +554,6 @@ def main():
             continue
         if(imghdr.what(os.path.relpath(subdir+'/'+file)) == 'jpeg'):
           filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
-#        elif (file_extension.upper() == '.JPG'):
-#          filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
         else:
           print('File: '+os.path.relpath(subdir+'/'+file)+' is not and image file')
           print(imghdr.what(os.path.relpath(subdir+'/'+file)))

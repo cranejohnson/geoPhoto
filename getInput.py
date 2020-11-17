@@ -73,8 +73,7 @@ def fileCallback():
     fileNum.delete(0, tkinter.END)
     fileNum.insert(0, numFiles)
     fileNum.config(state="disabled")
-    #filePath.insert(0, directory) #inserts new value assigned by 2nd parameter
-
+ 
 
 
 infoBlock = tkinter.Label(text="Instructions:\n\nEnter the information below and then select the top directory of photos to process.\nAll photos below this directory will be included.\n\n")
