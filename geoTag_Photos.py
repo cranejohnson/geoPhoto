@@ -5,7 +5,7 @@ Steps to run on windows (python3 with packages):
   2.  Open 'Anaconda prompt' from the windows start menu
   3.  In a directory where you want this project loaded:
         'git clone https://github.com/cranejohnson/geoPhoto.git'
-  4.  Run 'conda install -c conda-forge geojson'  to install geojson 
+  4.  Run 'conda install -c conda-forge geojson'  to install geojson
   5.  Run 'conda install -c conda-forge exifread' to install exifread
   6.  In the geoPhoto directory run 'python geoTag_Photos.py'
 
@@ -591,17 +591,10 @@ def main():
     zf.write("geoPhotos/"+title+"_map.html")
     zf.close()
 
-  # MacOS
-  mac_chrome_path = 'open -a /Applications/Google\ Chrome.app %s'
+  #remove kml file as it is not needed
+  if os.path.exists(kmlFileName):
+    os.remove(kmlFileName)
 
-  # Windows
-  windows_chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
-
-  # Linux
-  # chrome_path = '/usr/bin/google-chrome %s'
-
-  webbrowser.get(windows_chrome_path).open(baseDir+"/geoPhotos/"+title+"_map.html")
-  webbrowser.get(mac_chrome_path).open(baseDir+"/geoPhotos/"+title+"_map.html")
 
 
 if __name__ == '__main__':
