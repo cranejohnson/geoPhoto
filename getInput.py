@@ -74,7 +74,7 @@ def fileCallback():
           if(imghdr.what(os.path.relpath(subdir+'/'+file)) == 'jpeg'):
             filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
           else:
-            print('File: '+os.path.relpath(subdir+'/'+file)+' is not and image file')
+            print('File: '+os.path.relpath(subdir+'/'+file)+' is not an image file')
 
     numFiles = len(filelist)
     fileNum.config(state="normal")

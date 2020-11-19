@@ -555,7 +555,7 @@ def main():
         if(imghdr.what(os.path.relpath(subdir+'/'+file)) == 'jpeg'):
           filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
         else:
-          print('File: '+os.path.relpath(subdir+'/'+file)+' is not and image file')
+          print('File: '+os.path.relpath(subdir+'/'+file)+' is not an image file')
           print(imghdr.what(os.path.relpath(subdir+'/'+file)))
 
   filelist.sort()
