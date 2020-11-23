@@ -156,8 +156,8 @@ function getParameterByName(name, url) {
   var photoPoints = <GEOJSON_PHOTOS>;
 
   var photoMeta = getParameterByName('photoMeta');
-    if(photoMeta){
 
+    if(photoMeta){
       var ajaxData =  $.ajax({
           url:photoMeta,
           dataType: "json",
