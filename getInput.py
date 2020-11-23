@@ -18,8 +18,8 @@ if os.path.exists("parameters.input"):
 
 window = tkinter.Tk()
 
-w = 750 # width for the Tk root
-h = 350 # height for the Tk root
+w = 850 # width for the Tk root
+h = 400 # height for the Tk root
 
 # get screen width and height
 ws = window.winfo_screenwidth() # width of the screen
@@ -42,6 +42,8 @@ def saveCallback():
         outfile.write("[geoPhoto]\n")
         outfile.write("dir = "+filePath.get()+"\n")
         outfile.write("width = "+e1.get()+"\n")
+        outfile.write("title = "+t1.get()+"\n")
+        outfile.write("description = "+d1.get("1.0",'end-1c').replace('\n', ' ').replace('\r', '')+"\n")
         quit()
 
 def exitGui():
@@ -110,12 +112,20 @@ e1 = tkinter.Entry(window,width=5)
 e1.insert(tkinter.END, '640')
 e1.grid(row=4,column=1,sticky='W')
 
+tkinter.Label(window, text="Webpage Title:").grid(row=5,column=0)
+t1 = tkinter.Entry(window,width=50)
+t1.grid(row=5,column=1,sticky='W')
+
+tkinter.Label(window, text="Webpage Description:").grid(row=6,column=0)
+d1 = tkinter.Text(window,width=60,height = 3)
+d1.grid(row=6,column=1,sticky='W')
+
 
 b3 = tkinter.Button(window, text ="Run geoPhoto and generate: kml, kmz and html viewers", command = saveCallback)
-b3.grid(row=5,column=0)
+b3.grid(row=7,column=0)
 
 b4 = tkinter.Button(window, text ="Cancel",command=exitGui)
-b4.grid(row=6,column=0)
+b4.grid(row=8,column=0)
 
 
 window.mainloop()

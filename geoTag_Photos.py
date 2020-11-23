@@ -511,7 +511,7 @@ def CreateKmlFile(baseDir,file_names, new_file_name,resizeWidth,title):
   kml_file = open(new_file_name, 'w')
   kml_file.write(kml_doc.toprettyxml())
   feature_collection = FeatureCollection(features)
-  return json.dumps(feature_collection)
+  return feature_collection
 
 def extract_time(json):
     try:
@@ -534,6 +534,9 @@ def main():
   config = configparser.ConfigParser()
   config.readfp(open(r'parameters.input'))
   baseDir = config.get('geoPhoto', 'dir')
+  webtitle = config.get('geoPhoto', 'title')
+  description = config.get('geoPhoto', 'description')
+
   resizeWidth = int(config.get('geoPhoto', 'width'))
 
   print(baseDir)
@@ -568,6 +571,8 @@ def main():
   else:
     title = os.path.split(os.getcwd())[1]
     geoJsonCollection = CreateKmlFile(baseDir,filelist,kmlFileName,resizeWidth,title)
+    geoJsonCollection['title'] = webtitle
+    geoJsonCollection['description'] = description
     kmlSmallImages = os.listdir('geoPhotos/')
 
     #input file
@@ -577,10 +582,15 @@ def main():
     #for each line in the input file
     for line in fin:
       #read replace the string and write to output file
-      fout.write(line.replace('<GEOJSON_PHOTOS>', geoJsonCollection))
+      fout.write(line.replace('<GEOJSON_PHOTOS>', json.dumps(geoJsonCollection)))
     #close input and output files
     fin.close()
     fout.close()
+
+    metaOut = open(baseDir+"/geoPhotos/"+title+".json", "wt")
+
+    metaOut.write(json.dumps(geoJsonCollection, indent=4))
+    metaOut.close()
 
     timestr = time.strftime(baseDir+"/GeoTagged_Photos_Processed %Y_%m_%d.kmz")
     zf = zipfile.ZipFile(timestr, mode='w')

@@ -13,7 +13,7 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css" type="text/css" media="screen" />
-      <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+    <link href = "https://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
          rel = "stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous"></script>
     <script src="https://www.weather.gov/source/aprfc/js/jquery.ui.slider.custom.js"></script>
@@ -42,13 +42,13 @@
       overflow: hidden;
     }
 		#container {
-      width: 1200px;
+      width: 950px;
       background-color: #ffcc33;
       margin: auto;
     }
 		#mapid {
-			width: 500px;
-			height: 500px;
+			width: 300px;
+			height: 300px;
 			float:left
 		}
 		#imageBox{
@@ -114,7 +114,8 @@
 </head>
 <body>
 <center>
-<h3>APRFC Photo Viewer</h3>
+<h3>APRFC Photo Viewer: <span id="title"></span></h3>
+Discription<span id="description"></span><br>
 <i>Use the <strong>left</strong> and <strong>right</strong> arrow keys, click a point on the map or use the buttons below to view photos</i><br>
 <button id="back"> Previous Photo </button><button id="forward"> Next Photo </button>  <input type="checkbox" id="autoPan" checked ><label for="autoPan"> Auto Pan Enabled</label>
 <input type="checkbox" id="autoZoom" checked><label for="autoZoom"> Auto Zoom Enabled</label>
@@ -132,7 +133,7 @@
 
 <div id='container'>
 
-    <div id='mapid'></div>
+    <div id='mapid' class="ui-widget-content"></div>
     <div id='imageBox'>
         <a id="aImg" class="image-popup-vertical-fit" href="" title=""><img id="aImgview" src=""></a>
         <span id='photoInfo'></span>
@@ -140,11 +141,36 @@
 <div>
 <script>
 
-
+function getParameterByName(name, url) {
+          if (!url) url = window.location.href;
+          name = name.replace(/[\[\]]/g, "\\$&");
+          var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+              results = regex.exec(url);
+          if (!results) return null;
+          if (!results[2]) return '';
+          return decodeURIComponent(results[2].replace(/\+/g, " "));
+  }
 
   //var photoPoints =  <GEOJSON _ PHOTOS>;
 
   var photoPoints = <GEOJSON_PHOTOS>;
+
+  var photoMeta = getParameterByName('photoMeta');
+    if(photoMeta){
+
+      var ajaxData =  $.ajax({
+          url:photoMeta,
+          dataType: "json",
+          async: false,
+          success: console.log('loaded json geoPhoto data'),
+          error: function (xhr) {
+              alert(xhr.statusText)
+          }
+        });
+
+      photoPoints = ajaxData.responseJSON;
+   }
+
 
   var displayImageNo = -1;
 
@@ -157,6 +183,8 @@
   var photoGroup = {};
 
 
+  $("#title").text(photoPoints['title']);
+  $("#description").text(photoPoints['description']);
   //Get the average lat/lon of the photos
   for(var i=0; i<photoPoints.features.length; i++){
     var lat = photoPoints.features[i].geometry.coordinates[1];
@@ -308,9 +336,10 @@
   function showImage(layer){
     $("#aImgview").attr("src",layer.feature.properties.Path);
     $("#aImg").attr("href",layer.feature.properties.Path);
-    $("#aImg").attr("title","Taken: "+layer.feature.properties.Datetime+"<br/>\nFile:"+layer.feature.properties.Path);
+    var photoTime = moment(layer.feature.properties.takenTime*1000).format("MM/DD/YYYY h:mm");
+    $("#aImg").attr("title","Taken: "+photoTime+"<br/>\nFile:"+layer.feature.properties.Path);
     $("#photoInfo").html(
-      "Photo Number: "+(layer.feature.properties.order+1)+"<br><strong>EXIF information</strong><br>Date Taken: "+layer.feature.properties.Datetime+"<br>Lat: "+layer.feature.geometry.coordinates[1]+" Lon: "+layer.feature.geometry.coordinates[0]+"<br>Photo Direction: "+layer.feature.properties.bearing+" Degrees<br>File name: "+layer.feature.properties.Path);
+      "Photo Number: "+(layer.feature.properties.order+1)+"<br><strong>EXIF information</strong><br>Date Taken: "+photoTime+"<br>Lat: "+layer.feature.geometry.coordinates[1]+" Lon: "+layer.feature.geometry.coordinates[0]+"<br>Photo Direction: "+layer.feature.properties.bearing+" Degrees<br>File name: "+layer.feature.properties.Path);
 
 
 
@@ -367,6 +396,14 @@
 
   $(document).ready(function() {
 
+    $( "#mapid" ).resizable({
+
+    });
+
+    $("#mapid" ).resize(function(){
+      map.invalidateSize();
+
+    });
 
     $( "#slider-range" ).dragslider({
       range: true,
