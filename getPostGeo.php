@@ -192,9 +192,9 @@ foreach($filesToProcess as $file){
     foreach($files as $file){ 
       if(strpos($file,".html") !== false) continue;	    
       if(strpos($file,".json") !== false){
-        copy($gDir.$file,'rsync/cms_publicdata+geoPhoto+'.$file);
+        copy($gDir.$file,'toRsync/cms_publicdata+geoPhoto+'.$file);
       }else{
-        copy($gDir.$file,'rsync/cms_images+geoPhotos+'.$file);
+        copy($gDir.$file,'toRsync/cms_images+geoPhotos+'.$file);
       }	
     }
   } else {
