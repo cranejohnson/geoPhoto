@@ -182,6 +182,9 @@ print_r($filesToProcess);
 echo "Done with email processing";
 
 foreach($filesToProcess as $file){
+  #Move kmz to NIDS for viewing	 
+  $fname = basename($file);      
+  copy($file,'toRsync/cms_publicdata+geoPhoto+'.$fname);
   $zip = new ZipArchive;
   $res = $zip->open($file);
   if ($res === TRUE) {
