@@ -599,6 +599,7 @@ def main():
 
     zf.write(kmlFileName)
     zf.write("geoPhotos/"+title+"_map.html")
+    zf.write("geoPhotos/"+title+".json")
     zf.close()
 
   #remove kml file as it is not needed
