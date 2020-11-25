@@ -67,6 +67,8 @@ $emails = imap_search($inbox,'ALL');
 /* useful only if the above search is set to 'ALL' */
 $max_emails = 16;
 
+$filesToProcess = [];
+
 
 /* if any emails found, iterate through each email */
 if($emails) {
@@ -161,6 +163,7 @@ if($emails) {
                 $fp = fopen($dir."/kmz/".$email_number . "-" . $filename, "w+");
                 fwrite($fp, $attachment['attachment']);
                 fclose($fp);
+                $filesToProcess[] = $dir."/kmz/".$email_number . "-" . $filename;
             }
 
         }
@@ -174,7 +177,19 @@ if($emails) {
 /* close the connection */
 imap_close($inbox);
 
-echo "Done";
+echo "Done with email processing";
+
+foreach($filesToProcess as $file){
+  $zip = new ZipArchive;
+  $res = $zip->open($file);
+  if ($res === TRUE) {
+    $zip->extractTo('kml');
+    $zip->close();
+    echo 'woot!';
+  } else {
+    echo 'doh!';
+  }
+}
 
 ?>
 
