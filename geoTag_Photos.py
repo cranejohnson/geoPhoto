@@ -592,7 +592,8 @@ def main():
     metaOut.write(json.dumps(geoJsonCollection, indent=4))
     metaOut.close()
 
-    timestr = time.strftime(baseDir+"/GeoTagged_Photos_Processed %Y_%m_%d.kmz")
+    #timestr = time.strftime(baseDir+"/GeoTagged_Photos_Processed %Y_%m_%d.kmz")
+    timestr = baseDir+"/"+title+".kmz"
     zf = zipfile.ZipFile(timestr, mode='w')
     for file in kmlSmallImages:
       zf.write('geoPhotos/'+file)
