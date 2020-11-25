@@ -160,10 +160,10 @@ if($emails) {
                 /* prefix the email number to the filename in case two emails
                  * have the attachment with the same file name.
                  */
-                $fp = fopen($dir."/kmz/".$email_number . "-" . $filename, "w+");
+                $fp = fopen($dir."/tmp/".$filename, "w+");
                 fwrite($fp, $attachment['attachment']);
                 fclose($fp);
-                $filesToProcess[] = $dir."/kmz/".$email_number . "-" . $filename;
+                $filesToProcess[] = $dir."/tmp/".$filename;
             }
 
         }
@@ -177,19 +177,33 @@ if($emails) {
 /* close the connection */
 imap_close($inbox);
 
+
+print_r($filesToProcess);
 echo "Done with email processing";
 
 foreach($filesToProcess as $file){
   $zip = new ZipArchive;
   $res = $zip->open($file);
   if ($res === TRUE) {
-    $zip->extractTo('kml');
+    $zip->extractTo('tmp');
     $zip->close();
-    echo 'woot!';
+    $gDir = 'tmp/geoPhotos/';
+    $files = scandir($gDir);
+    foreach($files as $file){ 
+      if(strpos($file,".html") !== false) continue;	    
+      if(strpos($file,".json") !== false){
+        copy($gDir.$file,'rsync/cms_publicdata+geoPhoto+'.$file);
+      }else{
+        copy($gDir.$file,'rsync/cms_images+geoPhotos+'.$file);
+      }	
+    }
   } else {
     echo 'doh!';
   }
+
 }
+
+system('rsync -vzrt --remove-source-files toRsync/ 10.251.3.37::nids_incoming_aprfc');
 
 ?>
 
