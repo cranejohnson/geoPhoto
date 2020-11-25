@@ -152,7 +152,7 @@ Discription: <span id="description"></span><br>
   //Check to see if this is running on nids and if so load json file
   if(photoMeta){
     var ajaxData =  $.ajax({
-      url: "../source/aprfc/geoPhoto/"+photoMeta+".json",
+      url: "../source/aprfc/geoPhoto/"+photoMeta+".json?"+(new Date).getTime(),
       dataType: "json",
       async: false,
       success: console.log('loaded json geoPhoto data'),
