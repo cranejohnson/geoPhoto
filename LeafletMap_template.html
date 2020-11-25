@@ -235,13 +235,13 @@ Discription: <span id="description"></span><br>
   map.getPane('labels').style.pointerEvents = 'none';
 
 
-  var wmsCityLayer = L.tileLayer.wms('https://tiles1.dnr.alaska.gov/service?', {
+  var wmsCityLayer = L.tileLayer.wms('http://tiles1.dnr.alaska.gov/service?', {
     layers: 'dnr:MV_TOWN_L',
     transparent: true,
     pane: 'labels'
   }).addTo(map);
 
-  var wmsPlacesLayer = L.tileLayer.wms('https://tiles1.dnr.alaska.gov/service?', {
+  var wmsPlacesLayer = L.tileLayer.wms('http://tiles1.dnr.alaska.gov/service?', {
     layers: 'dnr:MV_USGS_PLACE_NAMES_L',
     transparent: true,
     pane: 'labels'
