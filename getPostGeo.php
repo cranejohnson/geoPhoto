@@ -167,7 +167,7 @@ if($emails) {
             }
 
         }
-        imap_mail_move($mbox,$email_number,$final_box);
+        imap_mail_move($emails,$email_number,$final_box);
         if($count++ >= $max_emails) break;
 
     }
@@ -189,8 +189,8 @@ foreach($filesToProcess as $file){
     $zip->close();
     $gDir = 'tmp/geoPhotos/';
     $files = scandir($gDir);
-    foreach($files as $file){ 
-      if(strpos($file,".html") !== false) continue;	    
+    foreach($files as $file){
+      if(strpos($file,".html") !== false) continue;
       if(strpos($file,".json") !== false){
         copy($gDir.$file,'toRsync/cms_publicdata+geoPhoto+'.$file);
       }else{
