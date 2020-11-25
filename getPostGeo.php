@@ -164,8 +164,9 @@ if($emails) {
             }
 
         }
-
+        imap_mail_move($mbox,$email_number,$final_box);
         if($count++ >= $max_emails) break;
+
     }
 
 }
