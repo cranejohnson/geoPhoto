@@ -12,7 +12,6 @@
  *
 
  *
- * @package get_igage
  * @author Crane Johnson <benjamin.johnson@noaa.gov>
  * @version 0.1
  */
@@ -26,6 +25,8 @@ date_default_timezone_set('UTC');
 define("CREDENTIALS_FILE","/usr/local/apps/scripts/bcj/hydroTools/login.php");
 
 include_once(CREDENTIALS_FILE);
+
+$dir = dirname(__FILE__);
 
 /**
  *
@@ -157,7 +158,7 @@ if($emails) {
                 /* prefix the email number to the filename in case two emails
                  * have the attachment with the same file name.
                  */
-                $fp = fopen($email_number . "-" . $filename, "w+");
+                $fp = fopen($dir."/kmz/".$email_number . "-" . $filename, "w+");
                 fwrite($fp, $attachment['attachment']);
                 fclose($fp);
             }
