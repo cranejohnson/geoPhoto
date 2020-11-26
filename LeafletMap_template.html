@@ -129,7 +129,7 @@
 <td width='750'>
 <center>
 <h3>APRFC Photo Viewer: <span id="title"></span></h3>
-Discription: <span id="description"></span><br><span id="kmzLink"></span><hr>
+Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Processed: <span id="pTime"></span></i><hr>
 <i>Use the <strong>left</strong> and <strong>right</strong> arrow keys, click a point on the map or use the buttons below to view photos</i><br>
 <button id="back"> Previous Photo </button><button id="forward"> Next Photo </button>  <input type="checkbox" id="autoPan" checked ><label for="autoPan"> Auto Pan Enabled</label>
 <input type="checkbox" id="autoZoom" ><label for="autoZoom"> Auto Zoom Enabled</label>
@@ -145,7 +145,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span><hr>
 <div id = "slider-range"></div>
 </td>
 <td>
-  <img src="https://www.weather.gov/images/aprfc/exampleMap.png" height="130px">
+  <img src="https://www.weather.gov/images/aprfc/exampleMap.png" height="150px">
 </td>
 </tr>
 </table>
@@ -193,9 +193,11 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span><hr>
   }
   //If not the photo json data should be in this file
   else{
-    //var photoPoints =  <GEOJSON _ PHOTOS>;
+    //var photoPoints =  "<GEOJSON _ PHOTOS>"";
     var photoPoints = "<GEOJSON_PHOTOS>";
   }
+
+
 
   var displayImageNo = -1;
 
@@ -210,6 +212,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span><hr>
 
   $("#title").text(photoPoints['title']);
   $("#description").text(photoPoints['description']);
+  $("#pTime").text(moment.unix(photoPoints['processed']).format("MM/DD/YYYY hh:mm a"));
   //Get the average lat/lon of the photos
   for(var i=0; i<photoPoints.features.length; i++){
     var lat = photoPoints.features[i].geometry.coordinates[1];

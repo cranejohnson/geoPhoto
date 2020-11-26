@@ -52,8 +52,8 @@ $hostname = $imapaddress . $imapmainbox;
 
 echo "Clearing tmp directory.....\n";
 $numRemoved = 0;
-$dir = "tmp/";
-$di = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS);
+$tempDir = "tmp/";
+$di = new RecursiveDirectoryIterator($tempDir, FilesystemIterator::SKIP_DOTS);
 $ri = new RecursiveIteratorIterator($di, RecursiveIteratorIterator::CHILD_FIRST);
 foreach ( $ri as $file ) {
     $file->isDir() ?  rmdir($file) : unlink($file);
@@ -174,10 +174,9 @@ if($emails) {
                 /* prefix the email number to the filename in case two emails
                  * have the attachment with the same file name.
                  */
-                $fp = fopen($dir."/tmp/".$filename, "w+");
+                $fp = fopen("toUpload/".$filename, "w+");
                 fwrite($fp, $attachment['attachment']);
                 fclose($fp);
-                $filesToProcess[] = $dir."/tmp/".$filename;
             }
 
         }
@@ -193,6 +192,7 @@ if($emails) {
 /* close the connection */
 imap_close($inbox);
 
+$filesToProcess = glob("toUpload/*.kmz");
 
 echo "Done with email processing\n\n\n";
 
@@ -204,8 +204,9 @@ if(count($filesToProcess) == 0){
 
 foreach($filesToProcess as $file){
   #Move kmz to NIDS for viewing
-  $fname = basename($file);
-  copy($file,'toRsync/cms_publicdata+geoPhoto+'.$fname);
+  $basename = basename($file);
+  copy($file,'toRsync/cms_publicdata+geoPhoto+'.$basename);
+  rename($file,"archive/".$basename)
   $zip = new ZipArchive;
   $res = $zip->open($file);
   if ($res === TRUE) {
@@ -213,12 +214,12 @@ foreach($filesToProcess as $file){
     $zip->close();
     $gDir = 'tmp/geoPhotos/';
     $files = scandir($gDir);
-    foreach($files as $file){
-      if(strpos($file,".html") !== false) continue;
-      if(strpos($file,".json") !== false){
-        copy($gDir.$file,'toRsync/cms_publicdata+geoPhoto+'.$file);
+    foreach($files as $f){
+      if(strpos($f,".html") !== false) continue;
+      if(strpos($f,".json") !== false){
+        copy($gDir.$f,'toRsync/cms_publicdata+geoPhoto+'.$f);
       }else{
-        copy($gDir.$file,'toRsync/cms_images+geoPhotos+'.$file);
+        copy($gDir.$f,'toRsync/cms_images+geoPhotos+'.$f);
       }
     }
   } else {
