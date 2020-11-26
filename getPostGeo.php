@@ -167,7 +167,7 @@ if($emails) {
             }
 
         }
-        imap_mail_move($emails,$email_number,$final_box);
+        imap_mail_move($inbox,$email_number,$final_box);
         if($count++ >= $max_emails) break;
 
     }
@@ -182,8 +182,8 @@ print_r($filesToProcess);
 echo "Done with email processing";
 
 foreach($filesToProcess as $file){
-  #Move kmz to NIDS for viewing	 
-  $fname = basename($file);      
+  #Move kmz to NIDS for viewing
+  $fname = basename($file);
   copy($file,'toRsync/cms_publicdata+geoPhoto+'.$fname);
   $zip = new ZipArchive;
   $res = $zip->open($file);
@@ -198,7 +198,7 @@ foreach($filesToProcess as $file){
         copy($gDir.$file,'toRsync/cms_publicdata+geoPhoto+'.$file);
       }else{
         copy($gDir.$file,'toRsync/cms_images+geoPhotos+'.$file);
-      }	
+      }
     }
   } else {
     echo 'doh!';
