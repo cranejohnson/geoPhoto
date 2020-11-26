@@ -50,6 +50,19 @@ $imapaddress = "{imap.gmail.com:993/imap/ssl}";
 //Gmail host with folder
 $hostname = $imapaddress . $imapmainbox;
 
+echo "Clearing tmp directory.....\n";
+$numRemoved = 0;
+$dir = "tmp/";
+$di = new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS);
+$ri = new RecursiveIteratorIterator($di, RecursiveIteratorIterator::CHILD_FIRST);
+foreach ( $ri as $file ) {
+    $file->isDir() ?  rmdir($file) : unlink($file);
+    $numRemoved++;
+}
+
+echo "$numRemoved files removed from tmp directory.";
+
+
 
 /* try to connect */
 $inbox = imap_open($hostname,$username,$password) or die('Cannot connect to Gmail: ' . imap_last_error());
@@ -68,9 +81,8 @@ $max_emails = 16;
 
 $filesToProcess = [];
 
-echo "Clearing tmp directory.....\n";
 
-array_map('unlink',array_filter((array) glob("tmp/*")));
+
 
 /* if any emails found, iterate through each email */
 if($emails) {
@@ -188,7 +200,7 @@ if(count($filestToProcess) == 0){
   echo "No messages to process, exiting.\n";
 
   exit();
-}  
+}
 
 foreach($filesToProcess as $file){
   #Move kmz to NIDS for viewing
