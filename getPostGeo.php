@@ -60,7 +60,7 @@ foreach ( $ri as $file ) {
     $numRemoved++;
 }
 
-echo "$numRemoved files removed from tmp directory.";
+echo "$numRemoved files removed from tmp directory.\n";
 
 
 
@@ -196,7 +196,7 @@ imap_close($inbox);
 
 echo "Done with email processing\n\n\n";
 
-if(count($filestToProcess) == 0){
+if(count($filesToProcess) == 0){
   echo "No messages to process, exiting.\n";
 
   exit();
