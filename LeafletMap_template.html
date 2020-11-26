@@ -26,22 +26,34 @@
   <script src="https://cdn.jsdelivr.net/npm/leaflet-rotatedmarker@0.2.0/leaflet.rotatedMarker.min.js"></script>
 
 <style>
-
-  img {
-    width:100%;
-    //height:100%;
-    object-fit: cover;
-    overflow: hidden;
+  html, body {
+    height: 100%;
+    margin: 0;
   }
+
   #container {
     width: 950px;
     margin: auto;
-    height: 1200px;
+    height:1000px;
   }
+
+  #leftPanel {
+    width:300px;
+    height:500px;
+    float:left;
+    border: 1px solid black;
+  }
+
   #mapid {
-    width: 300px;
-    height: 300px;
-    float:left
+    width: 100%;
+    height: calc(100% - 150px);
+    float:left;
+  }
+
+  #photoInfo {
+    width:100%;
+    height:100%;
+    float:left;
   }
   #imageBox{
     width:640px;
@@ -68,11 +80,11 @@
   }
   .ui-slider-tick-mark{
     display:inline-block;
-    width:2px;
+    width:3px;
     background:red;
-    height:27px;
+    height:40px;
     position:absolute;
-    top: -5px;
+    top: -12px;
     left:-2px;
   }
   .ui-slider-photos{
@@ -102,8 +114,10 @@
   }
 </style>
 
-
-
+<div id='container'>
+<table>
+<tr>
+<td>
 <center>
 <h3>APRFC Photo Viewer: <span id="title"></span></h3>
 Discription: <span id="description"></span><br>
@@ -120,14 +134,21 @@ Discription: <span id="description"></span><br>
 </p>
 </center>
 <div id = "slider-range"></div>
+</td>
+<td>
+  <img src="../../../exampleMap.png" height="130px">
+</td>
+</tr>
+</table>
 <br>
 
-<div id='container'>
 
-    <div id='mapid' class="ui-widget-content"></div>
+    <div id = 'leftPanel' class="ui-widget-content">
+      <div id='mapid' ></div>
+      <span id='photoInfo'></span>
+    </div>
     <div id='imageBox'>
         <a id="aImg" class="image-popup-vertical-fit" href="" title=""><img id="aImgview" src=""></a>
-        <span id='photoInfo'></span>
     </div>
 <div>
 <script>
@@ -149,12 +170,12 @@ Discription: <span id="description"></span><br>
   //Check to see if this is running on nids and if so load json file
   if(photoMeta){
     var ajaxData =  $.ajax({
-      url: "../source/aprfc/geoPhoto/"+photoMeta+".json?"+(new Date).getTime(),
+      url: "../source/aprfc/geoPhoto/"+photoMeta+".json",
       dataType: "json",
       async: false,
       success: console.log('loaded json geoPhoto data'),
       error: function (xhr) {
-        alert(xhr.statusText+"\nCheck the photoMeta parameter and try again.")
+        alert(xhr.statusText)
       }
     });
     photoPoints = ajaxData.responseJSON;
@@ -163,7 +184,7 @@ Discription: <span id="description"></span><br>
   //If not the photo json data should be in this file
   else{
     //var photoPoints =  <GEOJSON _ PHOTOS>;
-    var photoPoints = "<GEOJSON_PHOTOS>";
+    var photoPoints = "<GEOJSON _ PHOTOS>";
   }
 
   var displayImageNo = -1;
@@ -332,8 +353,12 @@ Discription: <span id="description"></span><br>
     $("#aImg").attr("href",nidsPath+layer.feature.properties.Path);
     var photoTime = moment(layer.feature.properties.takenTime*1000).format("MM/DD/YYYY h:mm");
     $("#aImg").attr("title","Taken: "+photoTime+"<br/>\nFile:"+layer.feature.properties.Path);
+    var direction = "N/A";
+    if(layer.feature.properties.bearing != null){
+      direction = layer.feature.properties.bearing+" degrees"
+    }
     $("#photoInfo").html(
-      "Photo Number: "+(layer.feature.properties.order+1)+"<br><strong>EXIF information</strong><br>Date Taken: "+photoTime+"<br>Lat: "+layer.feature.geometry.coordinates[1]+" Lon: "+layer.feature.geometry.coordinates[0]+"<br>Photo Direction: "+layer.feature.properties.bearing+" Degrees<br>File name: "+layer.feature.properties.Path);
+      "Photo Number: "+(layer.feature.properties.order+1)+"<br><strong>EXIF information</strong><br>Date Taken: "+photoTime+"<br>Lat: "+layer.feature.geometry.coordinates[1]+" Lon: "+layer.feature.geometry.coordinates[0]+"<br>Photo Direction: "+direction+"<br>File name: <br>"+layer.feature.properties.Path);
 
 
 
@@ -390,11 +415,11 @@ Discription: <span id="description"></span><br>
 
   $(document).ready(function() {
 
-    $( "#mapid" ).resizable({
+    $( "#leftPanel" ).resizable({
 
     });
 
-    $("#mapid" ).resize(function(){
+    $("#leftPanel" ).resize(function(){
       map.invalidateSize();
 
     });
