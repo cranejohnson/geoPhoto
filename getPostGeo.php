@@ -50,7 +50,6 @@ $imapaddress = "{imap.gmail.com:993/imap/ssl}";
 //Gmail host with folder
 $hostname = $imapaddress . $imapmainbox;
 
-$final_box = "[GOOGLE MAIL]/Trash";
 
 /* try to connect */
 $inbox = imap_open($hostname,$username,$password) or die('Cannot connect to Gmail: ' . imap_last_error());
@@ -69,6 +68,9 @@ $max_emails = 16;
 
 $filesToProcess = [];
 
+echo "Clearing tmp directory.....\n";
+
+array_map('unlink',array_filter((array) glob("tmp/*")));
 
 /* if any emails found, iterate through each email */
 if($emails) {
@@ -169,7 +171,7 @@ if($emails) {
         }
         #imap_mail_move($inbox,$email_number,$final_box);
         imap_delete($inbox,$email_number);
-        imap_expunge($inbox)
+        imap_expunge($inbox);
         if($count++ >= $max_emails) break;
 
     }
@@ -181,6 +183,12 @@ imap_close($inbox);
 
 
 echo "Done with email processing\n\n\n";
+
+if(count($filestToProcess) == 0){
+  echo "No messages to process, exiting.\n";
+
+  exit();
+}  
 
 foreach($filesToProcess as $file){
   #Move kmz to NIDS for viewing
