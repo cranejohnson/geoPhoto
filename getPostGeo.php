@@ -50,7 +50,7 @@ $imapaddress = "{imap.gmail.com:993/imap/ssl}";
 //Gmail host with folder
 $hostname = $imapaddress . $imapmainbox;
 
-$final_box = "trash";
+$final_box = "[GMAIL]/Trash";
 
 /* try to connect */
 $inbox = imap_open($hostname,$username,$password) or die('Cannot connect to Gmail: ' . imap_last_error());
