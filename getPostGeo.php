@@ -167,7 +167,9 @@ if($emails) {
             }
 
         }
-        imap_mail_move($inbox,$email_number,$final_box);
+        #imap_mail_move($inbox,$email_number,$final_box);
+        imap_delete($inbox,$email_number);
+        imap_expunge($inbox)
         if($count++ >= $max_emails) break;
 
     }
@@ -178,8 +180,7 @@ if($emails) {
 imap_close($inbox);
 
 
-print_r($filesToProcess);
-echo "Done with email processing";
+echo "Done with email processing\n\n\n";
 
 foreach($filesToProcess as $file){
   #Move kmz to NIDS for viewing
