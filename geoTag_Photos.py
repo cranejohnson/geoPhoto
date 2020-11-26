@@ -277,11 +277,17 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
 
   path,filename = os.path.split(file_name)
 
-  tags = exifread.process_file(the_file,details=False)
+  fh = GetFile(file_name)
+  tags = exifread.process_file(fh,details=False)
+  fh.close()
 
   if not os.path.exists('geoPhotos'):
     os.mkdir('geoPhotos')
+
+  print("Opening: "+file_name)
+
   im = Image.open(file_name)
+
   try:
     exif = im.info['exif']
   except:
@@ -305,6 +311,8 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
     im1 = im1.save('geoPhotos/'+smallFileName,'JPEG',exif=exif)
   else:
     im1 = im1.save('geoPhotos/'+smallFileName,'JPEG')
+
+  im.close();
 
 
   try:
@@ -477,15 +485,15 @@ def CreateKmlFile(baseDir,file_names, new_file_name,resizeWidth,title):
 
   kml_doc = CreateKmlDoc(title)
 
-
   for file_name in file_names:
     the_file = GetFile(baseDir+'/'+file_name)
     if the_file is None:
-      print ("'%s' is unreadable\n" % file_name)
-      file_names.remove(file_name)
-      continue
+     print ("'%s' is unreadable\n" % file_name)
+     file_names.remove(file_name)
+     continue
     else:
-      files[file_name] = the_file
+     files[file_name] = the_file
+     the_file.close()
 
 
 
@@ -537,6 +545,7 @@ def main():
   webtitle = config.get('geoPhoto', 'title')
   description = config.get('geoPhoto', 'description')
 
+
   resizeWidth = int(config.get('geoPhoto', 'width'))
 
   print(baseDir)
@@ -559,8 +568,8 @@ def main():
           filelist.append(os.path.relpath(subdir+'/'+file,baseDir))
         else:
           print('File: '+os.path.relpath(subdir+'/'+file)+' is not an image file')
-          print(imghdr.what(os.path.relpath(subdir+'/'+file)))
 
+  print("Completed directory scan. Processing images...\n")
   filelist.sort()
   kmlFileName = time.strftime("GeoTagged_Photos_Processed %Y_%m_%d.kml")
 
@@ -573,6 +582,7 @@ def main():
     geoJsonCollection = CreateKmlFile(baseDir,filelist,kmlFileName,resizeWidth,title)
     geoJsonCollection['title'] = webtitle
     geoJsonCollection['description'] = description
+    geoJsonCollection['processed'] = int(time.time())
     kmlSmallImages = os.listdir('geoPhotos/')
 
     #input file
