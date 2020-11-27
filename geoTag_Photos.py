@@ -272,6 +272,9 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
     An XML element representing the PhotoOverlay.
   """
 
+  colorList = ["#ff9900","#3399ff","#996633","#9900ff","#669999","#66ffff"]
+
+
   photo_id = 'photo%s' % file_iterator
   folderId = '-'.join(splitall(file_name)[:-1])
 
@@ -464,13 +467,18 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
   else:
       photoBearing = None
 
+  dayTaken = date_obj.strftime('%j')
+
+  color = colorList[int(dayTaken) % len(colorList)]
+
   return Feature(geometry=GeoPoint, properties={
-      "visible"  : True,
-      "bearing"  : photoBearing,
-      "order"    : 0,
-      "takenTime": takenTime,
-      "GPSDate"  : GPSTime,
-      "Path"     : smallFileName})
+      "visible"   : True,
+      "bearing"   : photoBearing,
+      "order"     : 0,
+      "takenTime" : takenTime,
+      "GPSDate"   : GPSTime,
+      "color"     : color,
+      "Path"      : smallFileName})
 
 
 

@@ -145,7 +145,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
 <div id = "slider-range"></div>
 </td>
 <td>
-  <img src="https://www.weather.gov/images/aprfc/exampleMap.png" height="150px">
+  <img src="https://www.weather.gov/images/aprfc/exampleMap.png" height="170px">
 </td>
 </tr>
 </table>
@@ -323,8 +323,8 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
         return L.circleMarker(latlng, {
           GPS: true,
           radius: 4,
-          fillColor: "orange",
-          color: "#000",
+          fillColor: feature.properties.color,
+          color: feature.properties.color,
           weight: 1,
           opacity: 1,
           fillOpacity: 0.8
@@ -340,7 +340,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
         showImage(e.layer);
 
         e.target.setStyle({
-          'fillColor': 'orange',
+          'fillColor': layer.feature.properties.color,
           'radius'   : 4
         });
         e.layer.setStyle({
@@ -417,12 +417,15 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
     var max =  $slider.dragslider("option", "max");
     var min =  $slider.dragslider("option", "min");
 
-	  var spacing =  100/((max - min)/(tick-min));
+	  var spacing =  100/((max - min)/(tick.properties.takenTime-min));
+
+	  var color = tick.properties.color;
 
 
     console.log(spacing)
+    console.log(color)
 
-    $('<span class="ui-slider-photos"></span>').css('left', (spacing) +  '%').appendTo($slider);
+    $('<span class="ui-slider-photos"></span>').css({'left':(spacing) +  '%','background':color}).appendTo($slider);
   }
 
 
@@ -458,8 +461,9 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
 
     $("#slider-range .ui-slider-handle").unbind('keydown');
 
+
     for(var i=0; i<photoPoints.features.length; i++){
-      setSliderPhotos("#slider-range",photoPoints.features[i].properties.takenTime);
+      setSliderPhotos("#slider-range",photoPoints.features[i]);
     }
 
 
@@ -513,7 +517,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
       }
       else{
         layer.setStyle({
-          'fillColor': 'orange',
+          'fillColor': layer.feature.properties.color,
           'radius'   : 4
         });
 
