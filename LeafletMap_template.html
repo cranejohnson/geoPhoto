@@ -41,7 +41,7 @@
     width:300px;
     height:500px;
     float:left;
-    border: 1px solid black;
+
   }
 
   #mapid {
@@ -52,9 +52,19 @@
 
   #photoInfo {
     width:100%;
-    height:100%;
+    height:auto;
     float:left;
   }
+  #photoInfo2 {
+    display:none;
+    width:300px;
+    height:auto;
+    float:left;
+  }
+  .photoI{
+    background-color: "#CFD8DC";
+    border: 1px solid black;
+    }
   #imageBox{
     width:640px;
     height:500px;
@@ -134,7 +144,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
 <button id="back"> Previous Photo </button><button id="forward"> Next Photo </button>  <input type="checkbox" id="autoPan" checked ><label for="autoPan"> Auto Pan Enabled</label>
 <input type="checkbox" id="autoZoom" ><label for="autoZoom"> Auto Zoom Enabled</label>
 <input type="text" id="zoomLevel" name="zoomLevel" size="4" value="9">
-<br>
+<input type="checkbox" id="largeMap" ><label for="largeMap">Large Map</label>
 
 <p>
   <label for = "dates">Date range (move sliders below to adjust):</label>
@@ -152,10 +162,11 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
 <br>
 
 
-    <div id = 'leftPanel' class="ui-widget-content">
+    <div id = 'leftPanel' class="ui-w idget-content">
       <div id='mapid' ></div>
-      <span id='photoInfo'></span>
+      <div id='photoInfo' class='photoI'></div>
     </div>
+    <div id='photoInfo2'  class='photoI'></div>
     <div id='imageBox'>
         <a id="aImg" class="image-popup-vertical-fit" href="" title=""><img id="aImgview" src=""></a>
     </div>
@@ -193,7 +204,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
   }
   //If not the photo json data should be in this file
   else{
-    //var photoPoints =  "<GEOJSON _ PHOTOS>"";
+    //var photoPoints =  "<GEOJSON _ PHOTOS>";
     var photoPoints = "<GEOJSON_PHOTOS>";
   }
 
@@ -208,6 +219,10 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
   var dateRange = [0,0];
   var maxMinOrder = [99999,0];
   var photoGroup = {};
+  var lastDay = -1;
+  var colorIndex = -1;
+  var colorList = ["#ff9900","#3399ff","#996633","#9900ff","#669999","#66ffff"];
+  var legend =[];
 
 
   $("#title").text(photoPoints['title']);
@@ -217,6 +232,16 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
   for(var i=0; i<photoPoints.features.length; i++){
     var lat = photoPoints.features[i].geometry.coordinates[1];
     var lng = photoPoints.features[i].geometry.coordinates[0];
+
+    var doy = moment.unix(photoPoints.features[i].properties.takenTime).dayOfYear();
+    if (doy != lastDay){
+      colorIndex = colorIndex +1;
+      lastDay = doy;
+      legend.push(moment.unix(photoPoints.features[i].properties.takenTime).format("M/D/YY"));
+    }
+    photoPoints.features[i].properties.color = colorList[colorIndex];
+
+
     if((photoPoints.features[i].properties.takenTime > 0) && ( dateRange[0] ==0 )){
       dateRange[0] = parseInt(photoPoints.features[i].properties.takenTime/3600)*3600-2*3600;
     }
@@ -231,7 +256,6 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
   }
   avgLat = avgLat/numGeoTag;
   avgLng = avgLng/numGeoTag;
-  console.log(dateRange)
 
   //setup leaflet base layers
   var esriTopo = L.esri.basemapLayer("Topographic");
@@ -338,15 +362,24 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
         displayImageNo = e.layer.feature.properties.order;
 
         showImage(e.layer);
+        //Highlight selected and return others to original color
+        photoGroup.eachLayer(function(layer) {
+          if(layer.feature.properties.order == displayImageNo ){
+            showImage(layer);
+            layer.setStyle({
+              'fillColor': 'blue',
+              'radius'   : 8
+            });
+          }
+          else{
+            layer.setStyle({
+              'fillColor': layer.feature.properties.color,
+              'radius'   : 4
+            });
 
-        e.target.setStyle({
-          'fillColor': layer.feature.properties.color,
-          'radius'   : 4
+          }
+          //layer.bindPopup(layer.feature.properties.name);
         });
-        e.layer.setStyle({
-           'fillColor': 'blue',
-           'radius'   : 8
-         });
       }
 
     });
@@ -370,8 +403,8 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
     if(layer.feature.properties.bearing != null){
       direction = layer.feature.properties.bearing+" degrees"
     }
-    $("#photoInfo").html(
-      "Photo Number: "+(layer.feature.properties.order+1)+"<br><strong>EXIF information</strong><br>Date Taken: "+photoTime+"<br>Lat: "+layer.feature.geometry.coordinates[1]+" Lon: "+layer.feature.geometry.coordinates[0]+"<br>Photo Direction: "+direction+"<br>File name: <br>"+layer.feature.properties.Path);
+    $(".photoI").html(
+      "Photo Number: "+(layer.feature.properties.order+1)+"<br><strong>EXIF information</strong><br>Date Taken: "+photoTime+"<br>Lat: "+layer.feature.geometry.coordinates[1]+" Lon: "+layer.feature.geometry.coordinates[0]+"<br>Photo Direction: "+parseInt(direction)+"<br>File name: <br>"+layer.feature.properties.Path);
 
 
 
@@ -393,7 +426,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
     //Add a marker to show where you clicked.
     if((layer.options.GPS == true)&& (layer.feature.properties.bearing != null)){
       theMarker = L.marker(layer._latlng, {
-          rotationAngle: layer.feature.properties.bearing+15
+          rotationAngle: layer.feature.properties.bearing
           //rotationOrigin: 'center center'
       }).addTo(map);
     }
@@ -422,8 +455,6 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
 	  var color = tick.properties.color;
 
 
-    console.log(spacing)
-    console.log(color)
 
     $('<span class="ui-slider-photos"></span>').css({'left':(spacing) +  '%','background':color}).appendTo($slider);
   }
@@ -431,9 +462,9 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
 
   $(document).ready(function() {
 
-    $( "#leftPanel" ).resizable({
-
-    });
+    //$( "#leftPanel" ).resizable({
+    //
+    //});
 
     $("#leftPanel" ).resize(function(){
       map.invalidateSize();
@@ -498,17 +529,17 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
 
     var display = false;
 
-    console.log(displayImageNo)
     if(displayImageNo < maxMinOrder[0]){
-      displayImageNo = maxMinOrder[1];
+      if(upDown > 0) displayImageNo = maxMinOrder[0];
+      if(upDown < 0) displayImageNo = maxMinOrder[1];
     }
     if(displayImageNo > maxMinOrder[1]){
-      displayImageNo = maxMinOrder[0];
+      if(upDown > 0) displayImageNo = maxMinOrder[0];
+      if(upDown < 0) displayImageNo = maxMinOrder[1];
     }
 
     photoGroup.eachLayer(function(layer) {
       if(layer.feature.properties.order == displayImageNo ){
-
         showImage(layer);
         layer.setStyle({
           'fillColor': 'blue',
@@ -522,16 +553,28 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
         });
 
       }
-
-
-
       //layer.bindPopup(layer.feature.properties.name);
     });
 
 
   }
 
+  $("#largeMap").change(function(){
+    if($('#largeMap').is(":checked")){
+      $("#photoInfo").css("display", "none");
+      $("#photoInfo2").css("display", "inline");
+      $("#leftPanel").css("width", "100%");
+      $("#mapid").css("height","100%");
+      map.invalidateSize();
+    }else{
+      $("#photoInfo").css("display", "inline");
+      $("#photoInfo2").css("display", "none");
+      $("#leftPanel").css("width", "300px");
+      $("#mapid").css("height","calc(100% - 150px)");
+      map.invalidateSize();
 
+    }
+  });
 
   $( "#back" ).click(function() {
     nextPhoto(-1,photoGroup);
