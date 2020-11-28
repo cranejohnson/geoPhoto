@@ -42,6 +42,7 @@ import os.path
 import imghdr
 import zipfile
 import exifread
+import geomag
 
 import webbrowser
 from PIL import Image
@@ -272,7 +273,6 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
     An XML element representing the PhotoOverlay.
   """
 
-  colorList = ["#ff9900","#3399ff","#996633","#9900ff","#669999","#66ffff"]
 
 
   photo_id = 'photo%s' % file_iterator
@@ -464,12 +464,13 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
   if "GPS GPSImgDirection" in tags:
       num,den = tags.get('GPS GPSImgDirection').__str__().split( '/' )
       photoBearing = int((float(num)/float(den)))
+      gm = geomag.GeoMag()
+      magDec = gm.GeoMag(coords[0],coords[1]).dec
+      print(magDec)
+      photoBearing = photoBearing + magDec
   else:
       photoBearing = None
 
-  dayTaken = date_obj.strftime('%j')
-
-  color = colorList[int(dayTaken) % len(colorList)]
 
   return Feature(geometry=GeoPoint, properties={
       "visible"   : True,
@@ -477,7 +478,6 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
       "order"     : 0,
       "takenTime" : takenTime,
       "GPSDate"   : GPSTime,
-      "color"     : color,
       "Path"      : smallFileName})
 
 
