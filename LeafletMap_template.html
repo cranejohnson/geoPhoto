@@ -139,11 +139,9 @@
 <td width='750'>
 <center>
 <h3>APRFC Photo Viewer: <span id="title"></span></h3>
-Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Processed: <span id="pTime"></span></i><hr>
+Description: <span id="description"></span><br><span id="kmzLink"></span> <i>Processed: <span id="pTime"></span></i><hr>
 <i>Use the <strong>left</strong> and <strong>right</strong> arrow keys, click a point on the map or use the buttons below to view photos</i><br>
 <button id="back"> Previous Photo </button><button id="forward"> Next Photo </button>  <input type="checkbox" id="autoPan" checked ><label for="autoPan"> Auto Pan Enabled</label>
-<input type="checkbox" id="autoZoom" ><label for="autoZoom"> Auto Zoom Enabled</label>
-<input type="text" id="zoomLevel" name="zoomLevel" size="4" value="9">
 <input type="checkbox" id="largeMap" ><label for="largeMap">Large Map</label>
 
 <p>
@@ -221,7 +219,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
   var photoGroup = {};
   var lastDay = -1;
   var colorIndex = -1;
-  var colorList = ["#ff9900","#3399ff","#996633","#9900ff","#669999","#66ffff"];
+  var colorList = ["#ff9900","#3399ff","#996633","#9900ff","#669999","#66ffff","#ff0000"];
   var legend =[];
 
 
@@ -397,7 +395,7 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
   function showImage(layer){
     $("#aImgview").attr("src",nidsPath+layer.feature.properties.Path);
     $("#aImg").attr("href",nidsPath+layer.feature.properties.Path);
-    var photoTime = moment(layer.feature.properties.takenTime*1000).format("MM/DD/YYYY h:mm");
+    var photoTime = moment(layer.feature.properties.takenTime*1000).format("MM/DD/YYYY h:mm a");
     $("#aImg").attr("title","Taken: "+photoTime+"<br/>\nFile:"+layer.feature.properties.Path);
     var direction = "N/A";
     if(layer.feature.properties.bearing != null){
@@ -413,14 +411,8 @@ Discription: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
     };
 
     if((layer.options.GPS == true) && ($('#autoPan').is(":checked"))){
-      if($('#autoZoom').is(":checked")){
-
-              map.flyTo(layer._latlng,parseInt($( "#zoomLevel" ).val()))
-      }
-      else{
-        var zl = parseInt(map.getZoom());
-        map.setView(layer._latlng,zl);
-      }
+      var zl = parseInt(map.getZoom());
+      map.setView(layer._latlng,zl);
     }
 
     //Add a marker to show where you clicked.
