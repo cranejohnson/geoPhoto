@@ -2,4 +2,6 @@ move2nids.sh
 test_photos/*
 parameters.input
 tmp/*
-toRsync/*
+toRsync/
+archive/*
+cron.log
