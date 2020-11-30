@@ -84,6 +84,8 @@ $filesToProcess = [];
 
 
 
+
+
 /* if any emails found, iterate through each email */
 if($emails) {
 
@@ -95,6 +97,8 @@ if($emails) {
     /* for every email... */
     foreach($emails as $email_number)
     {
+
+        $header = imap_fetchheader($inbox, $result); // get first mails header
 
         /* get information specific to this email */
         $overview = imap_fetch_overview($inbox,$email_number,0);
@@ -175,6 +179,7 @@ if($emails) {
                  * have the attachment with the same file name.
                  */
                 $fp = fopen("toUpload/".$filename, "w+");
+                $filesToProcess[$filename]-> $header->senderaddress;
                 fwrite($fp, $attachment['attachment']);
                 fclose($fp);
             }
@@ -189,10 +194,24 @@ if($emails) {
 
 }
 
+$mail = new PHPMailer;
+$mail->FromName = 'nws.ar.aprfc';
+$mail->addAddress('benjamin.johnson@noaa.gov','Crane');
+
+
 /* close the connection */
 imap_close($inbox);
 
-$filesToProcess = glob("toUpload/*.kmz");
+$files = glob("toUpload/*.kmz");
+foreach ($files as $f){
+  if(array_key_exists($f,$filesToProcess)){
+    continue;
+  }else{
+    $filesToProcess[$f] = '';
+  }
+
+}
+
 
 echo "Done with email processing\n\n\n";
 
@@ -202,29 +221,49 @@ if(count($filesToProcess) == 0){
   exit();
 }
 
-foreach($filesToProcess as $file){
+$emailMessage = "";
+
+foreach($filesToProcess as $file->$email){
   #Move kmz to NIDS for viewing
-  $basename = basename($file);
+  $basename = pathinfo($file);
+  $filename = pathinfo($file, PATHINFO_FILENAME);
+  $emailMessage .= "Working on file: ".$basename."\n\n";
+  $emailMessage .= "https://www.weather.gov/aprfc/geoPhoto?photoMeta=".$filename."\n\n";
+
   copy($file,'toRsync/cms_publicdata+geoPhoto+'.$basename);
   rename($file,"archive/".$basename)
   $zip = new ZipArchive;
   $res = $zip->open($file);
+  $emailMessage .= "Files:\n"
   if ($res === TRUE) {
     $zip->extractTo('tmp');
     $zip->close();
     $gDir = 'tmp/geoPhotos/';
     $files = scandir($gDir);
+    $count = 0;
     foreach($files as $f){
+      $count ++;
       if(strpos($f,".html") !== false) continue;
       if(strpos($f,".json") !== false){
         copy($gDir.$f,'toRsync/cms_publicdata+geoPhoto+'.$f);
+        $emailMessage .= 'toRsync/cms_publicdata+geoPhoto+'.$f."\n";
       }else{
         copy($gDir.$f,'toRsync/cms_images+geoPhotos+'.$f);
+        $emailMessage .= 'toRsync/cms_images+geoPhotos+'.$f."\n";
       }
     }
+    $emailMessage .= "\n\nFiles to me rsrnced: ".$count."\n";
+    $
   } else {
     echo 'doh!';
   }
+  $mail = new PHPMailer;
+  $mail->FromName = 'nws.ar.aprfc';
+  $mail->addAddress('benjamin.johnson@noaa.gov','Crane');
+  $mail->addAddress($email);
+  $mail->Subject = "geoPhoto Upload for: ".$basename;
+  $mail->Body = $emailMessage;
+  $mail->send;
 
 }
 
