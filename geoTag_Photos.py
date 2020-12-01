@@ -11,23 +11,6 @@ Steps to run on windows (python3 with packages):
 
 """
 
-"""Reads the EXIF headers from geo-tagged photos. and creates a KML file.
-
-Reads the EXIF headers from geo-tagged photos and creates a KML file with
-a PhotoOverlay element for each file. Requires the open source EXIF.py file
-downloadable at:
-
-http://sourceforge.net/projects/exif-py/
-
-  GetFile(): Handles the opening of an individual file.
-  GetHeaders(): Reads the headers from the file.
-  DmsToDecimal(): Converts EXIF GPS headers data to a decimal degree.
-  GetGps(): Parses out the the GPS headers from the headers data.
-  CreateKmlDoc(): Creates an XML document object to represent the KML document.
-  CreatePhotoOverlay: Creates an individual PhotoOverlay XML element object.
-  CreateKmlFile(): Creates and writes out a KML document to file.
-"""
-
 
 
 import sys
