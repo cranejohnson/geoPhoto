@@ -293,6 +293,7 @@ def CreatePhotoOverlay(kml_doc, file_name, the_file, file_iterator,resizeWidth):
   today = datetime.now()
 
   smallFileName = today.strftime("%Y%m%d")+'-'+longname+'-'+parts[0]+'_small.jpg'
+  smallFileName = smallFileName.replace("--","-")
   if exif:
     im1 = im1.save('geoPhotos/'+smallFileName,'JPEG',exif=exif)
   else:
@@ -574,7 +575,6 @@ def main():
     geoJsonCollection['title'] = webtitle
     geoJsonCollection['description'] = description
     geoJsonCollection['processed'] = int(time.time())
-    kmlSmallImages = os.listdir('geoPhotos/')
 
     #input file
     fin = open(geoPhotoDir+"/LeafletMap_template.html", "rt")
@@ -596,18 +596,23 @@ def main():
     #timestr = time.strftime(baseDir+"/GeoTagged_Photos_Processed %Y_%m_%d.kmz")
     timestr = baseDir+"/"+title+".kmz"
     zf = zipfile.ZipFile(timestr, mode='w')
+    kmlSmallImages = os.listdir('geoPhotos/')
     for file in kmlSmallImages:
       zf.write('geoPhotos/'+file)
 
+
     zf.write(kmlFileName)
-    zf.write("geoPhotos/"+title+"_map.html")
-    zf.write("geoPhotos/"+title+".json")
+    #zf.write("geoPhotos/"+title+"_map.html")
+    #zf.write("geoPhotos/"+title+".json")
     zf.close()
 
   #remove kml file as it is not needed
   if os.path.exists(kmlFileName):
     os.remove(kmlFileName)
 
+  print("Completed processing images...\n\n")
+  print("Important:\nOpen "+baseDir+"/geoPhotos/"+title+".html in a browser window to test output.\n")
+  print("Open "+baseDir+"/geoPhotos/"+title+".kmz in google earth.\n\n")
 
 
 if __name__ == '__main__':
