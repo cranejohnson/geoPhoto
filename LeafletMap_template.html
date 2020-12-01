@@ -533,6 +533,7 @@ Description: <span id="description"></span><br><span id="kmzLink"></span> <i>Pro
     photoGroup.eachLayer(function(layer) {
       if(layer.feature.properties.order == displayImageNo ){
         showImage(layer);
+        layer.bringToFront();
         layer.setStyle({
           'fillColor': 'blue',
           'radius'   : 8
