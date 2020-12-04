@@ -605,14 +605,14 @@ def main():
     #zf.write("geoPhotos/"+title+"_map.html")
     #zf.write("geoPhotos/"+title+".json")
     zf.close()
+    print("Completed processing images...\n\n")
+    print("Important:\nOpen "+baseDir+"/geoPhotos/"+title+".html in a browser window to test output.\n")
+    print("Open "+baseDir+"/geoPhotos/"+title+".kmz in google earth.\n\n")
 
   #remove kml file as it is not needed
   if os.path.exists(kmlFileName):
     os.remove(kmlFileName)
 
-  print("Completed processing images...\n\n")
-  print("Important:\nOpen "+baseDir+"/geoPhotos/"+title+".html in a browser window to test output.\n")
-  print("Open "+baseDir+"/geoPhotos/"+title+".kmz in google earth.\n\n")
 
 
 if __name__ == '__main__':
