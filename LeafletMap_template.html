@@ -390,6 +390,9 @@
 
   map.fitBounds(photoGroup.getBounds());
 
+  var zl = parseInt(map.getZoom());
+  if (zl > 12 ) map.setZoom(12);
+
 
 
   function showImage(layer){
