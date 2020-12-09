@@ -532,7 +532,7 @@ def main():
 
 
   config = configparser.ConfigParser()
-  config.readfp(open(r'parameters.input'))
+  config.read_file(open(r'parameters.input'))
   baseDir = config.get('geoPhoto', 'dir')
   webtitle = config.get('geoPhoto', 'title')
   description = config.get('geoPhoto', 'description')
